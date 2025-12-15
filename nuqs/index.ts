@@ -1,15 +1,29 @@
-import { parseAsString, SingleParserBuilder, Values } from "nuqs";
+import {
+  createLoader,
+  parseAsInteger,
+  parseAsString,
+  SingleParserBuilder,
+  Values,
+} from "nuqs";
 
 export const searchParamsSchema = {
   redirect: parseAsString,
-  page: parseAsString.withDefault("1"),
-  limit: parseAsString.withDefault("30"),
+  page: parseAsInteger.withDefault(1),
+  limit: parseAsInteger.withDefault(30),
+  search: parseAsString.withDefault(""),
+  repoSearch: parseAsString.withDefault(""),
+  status: parseAsString.withDefault("all"),
+  viewMode: parseAsString.withDefault("list"),
 };
 
 type ParamsTypes = Values<{
   redirect: SingleParserBuilder<string>;
   page: SingleParserBuilder<number>;
   limit: SingleParserBuilder<number>;
+  search: SingleParserBuilder<string>;
+  repoSearch: SingleParserBuilder<string>;
+  status: SingleParserBuilder<string>;
+  viewMode: SingleParserBuilder<string>;
 }>;
 
 // Helper function to build URLs with current params
@@ -29,3 +43,6 @@ export const buildUrl = (
 
   return `${href}?${newParams.toString()}`;
 };
+
+// To be used on the server
+export const loadSearchParams = createLoader(searchParamsSchema);

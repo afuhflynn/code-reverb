@@ -8,7 +8,9 @@ import {
   getDashboardStats,
   getMonthlyActivity,
 } from "@/lib/github-utils/actions";
-import { useQuery } from "@tanstack/react-query";
+import { fetchRespositories } from "@/lib/repository/actions";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { ALL } from "node:dns";
 
 export function useUserProfile() {
   return useQuery({
@@ -82,5 +84,22 @@ export function useDailyActivityChart() {
     refetchOnMount: true,
     retry: 1,
     retryDelay: 1000,
+  });
+}
+
+// repositories
+
+export function useRepositories() {
+  return useInfiniteQuery({
+    queryKey: ["repositories"],
+    queryFn: async ({ pageParam = 1 }) => {
+      const data = await fetchRespositories(pageParam, 10);
+      return data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < 10) return undefined;
+      return allPages.length + 1;
+    },
+    initialPageParam: 1,
   });
 }

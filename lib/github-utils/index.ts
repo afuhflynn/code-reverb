@@ -47,7 +47,7 @@ export async function getGithubToken() {
 
 export async function fetchUserGithubContributions(
   username: string,
-  accessToken: string,
+  accessToken: string
 ) {
   const octokit = new Octokit({ auth: accessToken });
 
@@ -81,3 +81,21 @@ export async function fetchUserGithubContributions(
     return null;
   }
 }
+
+export const getRepositories = async (
+  page: number = 1,
+  perPage: number = 10
+) => {
+  const token = await getGithubToken();
+  const octokit = new Octokit({ auth: token });
+
+  const { data } = await octokit.rest.repos.listForAuthenticatedUser({
+    sort: "updated",
+    direction: "desc",
+    visibility: "all",
+    per_page: perPage,
+    page,
+  });
+
+  return data;
+};
