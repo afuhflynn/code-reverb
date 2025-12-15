@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +10,7 @@ import {
   Zap,
   ArrowRight,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const aiInsights = [
   {
@@ -77,6 +80,7 @@ const getIconColor = (type: string) => {
 };
 
 export function AIInsights() {
+  const router = useRouter();
   return (
     <Card>
       <CardHeader>
@@ -116,7 +120,20 @@ export function AIInsights() {
                   </Badge>
                 </div>
 
-                <Button size="sm" variant="outline" className="h-7 text-xs">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    if (insight.action === "Start Review")
+                      router.push("/repositories");
+                    else if (insight.action === "Switch Persona")
+                      router.push("/personas");
+                    else if (insight.action === "View Stats")
+                      router.push("/reviews");
+                    else router.push("/repositories");
+                  }}
+                >
                   {insight.action}
                   <ArrowRight className="h-3 w-3 ml-1" />
                 </Button>
@@ -130,7 +147,11 @@ export function AIInsights() {
             <span className="text-sm text-muted-foreground">
               AI insights powered by Gemini & OpenAI
             </span>
-            <Button variant="ghost" size="sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/settings")}
+            >
               Customize AI Settings
             </Button>
           </div>

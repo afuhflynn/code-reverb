@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import {
   Star,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
 
 const reviewQueue = [
   {
@@ -109,6 +112,7 @@ const getPriorityColor = (priority: string) => {
 };
 
 export function ReviewQueue() {
+  const router = useRouter();
   return (
     <Card>
       <CardHeader>
@@ -167,11 +171,26 @@ export function ReviewQueue() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button size="sm">
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      router.push(
+                        `/repositories/${item.repository.replace("-", "")}`,
+                      )
+                    }
+                  >
                     <Play className="h-3 w-3 mr-1" />
                     Start Review
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      router.push(
+                        `/repositories/${item.repository.replace("-", "")}`,
+                      )
+                    }
+                  >
                     View PR
                   </Button>
                 </div>
@@ -185,7 +204,11 @@ export function ReviewQueue() {
             <span className="text-sm text-muted-foreground">
               {reviewQueue.length} reviews pending your attention
             </span>
-            <Button variant="ghost" size="sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/reviews")}
+            >
               View All Reviews
             </Button>
           </div>

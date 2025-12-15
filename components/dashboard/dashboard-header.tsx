@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, GitBranch, User, BarChart3, HelpCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface DashboardHeaderProps {
   user: {
@@ -13,6 +14,7 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const router = useRouter();
   const displayName = user.name || user.email?.split("@")[0] || "Developer";
 
   return (
@@ -30,7 +32,11 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button id="quick-action-new-review" className="gap-2">
+        <Button
+          id="quick-action-new-review"
+          className="gap-2"
+          onClick={() => router.push("/repositories")}
+        >
           <Plus className="h-4 w-4" />
           New Review
         </Button>
@@ -38,6 +44,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           id="quick-action-connect-repo"
           variant="outline"
           className="gap-2"
+          onClick={() => router.push("/repositories")}
         >
           <GitBranch className="h-4 w-4" />
           Connect Repository
@@ -46,6 +53,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           id="quick-action-create-persona"
           variant="outline"
           className="gap-2"
+          onClick={() => router.push("/personas")}
         >
           <User className="h-4 w-4" />
           Create Persona
@@ -54,6 +62,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           id="quick-action-view-analytics"
           variant="outline"
           className="gap-2"
+          onClick={() => router.push("/reviews")}
         >
           <BarChart3 className="h-4 w-4" />
           View Analytics

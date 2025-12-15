@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
 
 const mockRepositories = [
   {
@@ -102,6 +105,7 @@ const getLanguageColor = (language: string) => {
 };
 
 export function ActiveRepositories() {
+  const router = useRouter();
   return (
     <Card>
       <CardHeader>
@@ -158,19 +162,36 @@ export function ActiveRepositories() {
               </div>
 
               <div className="flex gap-2">
-                <Button size="sm" variant="outline">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push(`/repositories/${repo.id}`)}
+                >
                   <ExternalLink className="h-3 w-3 mr-1" />
                   View Details
                 </Button>
-                <Button size="sm" variant="outline">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push(`/repositories/${repo.id}`)}
+                >
                   <Settings className="h-3 w-3 mr-1" />
                   Settings
                 </Button>
                 {repo.status === "pending" && (
-                  <Button size="sm">Complete Setup</Button>
+                  <Button
+                    size="sm"
+                    onClick={() => router.push(`/repositories/${repo.id}`)}
+                  >
+                    Complete Setup
+                  </Button>
                 )}
                 {repo.status === "error" && (
-                  <Button size="sm" variant="destructive">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => router.push(`/repositories/${repo.id}`)}
+                  >
                     Fix Connection
                   </Button>
                 )}
@@ -180,7 +201,11 @@ export function ActiveRepositories() {
         ))}
 
         <div className="pt-4 border-t">
-          <Button variant="outline" className="w-full">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push("/repositories")}
+          >
             Connect New Repository
           </Button>
         </div>

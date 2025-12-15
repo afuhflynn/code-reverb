@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import {
   GitMerge,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
 
 const mockPRs = [
   {
@@ -112,6 +115,7 @@ const getPriorityColor = (priority: string) => {
 };
 
 export function RecentPRsFeed() {
+  const router = useRouter();
   return (
     <Card>
       <CardHeader>
@@ -179,15 +183,32 @@ export function RecentPRsFeed() {
               </div>
 
               <div className="flex gap-2">
-                <Button size="sm" variant="outline">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => router.push(`/repositories/${pr.repository}`)}
+                >
                   <Eye className="h-3 w-3 mr-1" />
                   View Details
                 </Button>
                 {pr.reviewStatus === "pending" && (
-                  <Button size="sm">Start Review</Button>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      router.push(`/repositories/${pr.repository}`)
+                    }
+                  >
+                    Start Review
+                  </Button>
                 )}
                 {pr.reviewStatus === "in-progress" && (
-                  <Button size="sm" variant="secondary">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() =>
+                      router.push(`/repositories/${pr.repository}`)
+                    }
+                  >
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Continue Review
                   </Button>
@@ -198,7 +219,11 @@ export function RecentPRsFeed() {
         ))}
 
         <div className="pt-4 border-t">
-          <Button variant="outline" className="w-full">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => router.push("/repositories")}
+          >
             View All Pull Requests
           </Button>
         </div>
