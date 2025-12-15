@@ -22,9 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { months } from "@/constants";
-import { useQuery } from "@tanstack/react-query";
-import { getDailyContributions } from "@/lib/github-utils/actions";
+import { useDailyActivityChart } from "@/hooks";
 
 const getActivityLevel = (count: number): number => {
   if (count === 0) return 0;
@@ -35,11 +33,11 @@ const getActivityLevel = (count: number): number => {
 };
 
 const activityColors: Record<number, string> = {
-  0: "bg-gray-700/30 dark:bg-gray-800/30",
-  1: "bg-emerald-200 dark:bg-emerald-900",
-  2: "bg-emerald-300 dark:bg-emerald-800",
-  3: "bg-emerald-400 dark:bg-emerald-700",
-  4: "bg-emerald-500 dark:bg-emerald-600",
+  0: "bg-gray-700/30 dark:bg-gray-800/30 cursor-pointer",
+  1: "bg-emerald-200 dark:bg-emerald-900 cursor-pointer",
+  2: "bg-emerald-300 dark:bg-emerald-800 cursor-pointer",
+  3: "bg-emerald-400 dark:bg-emerald-700 cursor-pointer",
+  4: "bg-emerald-500 dark:bg-emerald-600 cursor-pointer",
 };
 
 export function ActivityChart() {
@@ -47,15 +45,7 @@ export function ActivityChart() {
   const [totalContributions, setTotalContributions] = useState(0);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  const {
-    data: dailyActivities,
-    isPending,
-    isError,
-  } = useQuery({
-    queryKey: ["daily-contributions"],
-    queryFn: getDailyContributions,
-    refetchOnWindowFocus: false,
-  });
+  const { data: dailyActivities, isPending, isError } = useDailyActivityChart();
 
   const generateYearGrid = useCallback((year: number) => {
     const startDate = new Date(year, 0, 1);

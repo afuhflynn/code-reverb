@@ -1,15 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GitBranch, GitCommit, GitPullRequest, Bot } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { getDashboardStats } from "@/lib/github-utils/actions";
+import { useDashboardStats } from "@/hooks";
 
 export function StatsOverview() {
-  const { data, isPending, isError } = useQuery({
-    queryKey: ["dashboard-stats"],
-    queryFn: getDashboardStats,
-    refetchOnWindowFocus: false,
-  });
+  const { data, isPending, isError } = useDashboardStats();
 
   if (isPending) {
     return (
