@@ -6,7 +6,7 @@ import { ReviewsAnalyticsTabs } from "@/components/reviews/reviews-analytics-tab
 import { ReviewsActivityTimeline } from "@/components/reviews/reviews-activity-timeline";
 
 export default async function ReviewsPage() {
-  const session = await requireAuth();
+  const session = await requireAuth("/reviews");
 
   return (
     <div className="min-h-screen bg-background">

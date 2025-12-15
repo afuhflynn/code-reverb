@@ -61,31 +61,57 @@ An AI-powered code review platform that integrates with GitHub to provide intell
 
    ```env
    # Database
-   DATABASE_URL="postgresql://user:password@localhost:5432/code_reverb"
+
+   DATABASE_URL="postgresql://postgres:password@localhost:5439/code_reverb" # Local postgres db - docker container
 
    # GitHub OAuth
-   GITHUB_CLIENT_ID=your_github_client_id
-   GITHUB_CLIENT_SECRET=your_github_client_secret
+
+   GITHUB_CLIENT_ID="your_github_client_id"
+   GITHUB_CLIENT_SECRET="your_github_client_secret"
 
    # AI APIs
-   GOOGLE_AI_API_KEY=your_google_ai_key
-   OPENAI_API_KEY=your_openai_key
 
-   # Vector DB
-   PINECONE_API_KEY=your_pinecone_key
-   PINECONE_INDEX_NAME=code-reverb
+   GOOGLE_GENERATIVE_AI_API_KEY="your_google_generative_ai_api_key"
+   OPENAI_API_KEY="your_openai_api_key"
 
-   # Email
-   SMTP_HOST=smtp.gmail.com
-   SMTP_PORT=587
-   SMTP_USER=your_email@gmail.com
-   SMTP_PASS=your_app_password
+   # Vector Database (Pinecone)
 
-   # Inngest
-   INNGEST_EVENT_KEY=your_inngest_event_key
+   PINECONE_API_KEY="your_pinecone_api_key"
+   PINECONE_INDEX_NAME="code-reverb"
+   PINECONE_ENVIRONMENT="your_pinecone_environment"
 
-   # Secrets Management
-   NVII_API_KEY=your_nvii_api_key
+   # Email Service (SMTP)
+
+   SMTP_HOST="smtp.gmail.com"
+   SMTP_PORT="587"
+   SMTP_USER="<your_mail_id>"
+   SMTP_PASS="your_smt_pass"
+   FROM_EMAIL="<from_email>"
+   SMTP_USER_NAME="smtp_user_name"
+
+   # Background Jobs (Inngest)
+
+   INNGEST_EVENT_KEY="dev-event-key"
+   INNGEST_SIGNING_KEY="dev-signing-key"
+
+   # Secrets Management (nvii.dev)
+
+   NVII_API_KEY="your_nvii_api_key"
+
+   # Arcjet setup
+
+   ARCJET_KEY="your_arcjet_key"
+
+   # Optional: For production
+
+   VERCEL_URL="your_vercel_deployment_url"
+   NODE_ENV="development"
+
+   BETTER_AUTH_SECRET="your_better_auth_secret"
+   BETTER_AUTH_URL="<http://localhost:3000>" # Base URL of your app
+
+   NEXT_PUBLIC_BASE_URL="<http://localhost:3000>"
+   NEXT_PUBLIC_API_BASE_URL="<http://localhost:3000/api>"
    ```
 
 4. **Set up the database**

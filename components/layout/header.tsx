@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export function Header() {
   const router = useRouter();
   return (
-    <header className="flex h-16 items-center shrink-0 justify-between border-b bg-sidebar px-6">
+    <header className="flex h-16 items-center shrink-0 justify-between border-b bg-sidebar px-6 sticky z-40 backdrop-blur-2xl top-0 left-0 right-0">
       <SidebarTrigger className="-ml-1" />
       <div className="flex items-center space-x-4">
         <div className="relative">

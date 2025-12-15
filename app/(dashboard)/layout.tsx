@@ -8,11 +8,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireAuth();
+  await requireAuth("/app");
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="relative">
         <Header />
         <main className="flex-1 overflow-auto pt-4 md:pt-6">{children}</main>
       </SidebarInset>

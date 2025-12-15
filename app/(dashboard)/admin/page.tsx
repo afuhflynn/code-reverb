@@ -3,7 +3,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminContent } from "@/components/admin/admin-content";
 
 export default async function AdminPage() {
-  const session = await requireAuth();
+  const session = await requireAuth("/admin");
 
   // TODO: Check if user is admin
   const isAdmin = true; // Mock for now
