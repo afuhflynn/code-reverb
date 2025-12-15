@@ -1,253 +1,176 @@
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  GitBranch,
   Settings,
   ExternalLink,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  GitPullRequest,
   Star,
   GitFork,
+  Lock,
+  AlertCircle,
+  Plus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useRepositories } from "@/hooks";
+import { useQueryStates } from "nuqs";
+import { searchParamsSchema } from "@/nuqs";
+import { getLanguageColor, getStatusColor } from "@/utils";
+import { RepositoryCardSkeleton } from "../skeletons/repo-loading";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-const mockRepositories = [
-  {
-    id: 1,
-    name: "web-app",
-    fullName: "myorg/web-app",
-    description:
-      "Main web application frontend built with React and TypeScript",
-    status: "connected",
-    lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    openPRs: 3,
-    language: "TypeScript",
-    stars: 45,
-    forks: 12,
-    isSelected: false,
-  },
-  {
-    id: 2,
-    name: "api-service",
-    fullName: "myorg/api-service",
-    description: "Backend API service with GraphQL and PostgreSQL",
-    status: "connected",
-    lastActivity: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    openPRs: 5,
-    language: "Go",
-    stars: 23,
-    forks: 8,
-    isSelected: false,
-  },
-  {
-    id: 3,
-    name: "mobile-app",
-    fullName: "myorg/mobile-app",
-    description: "React Native mobile application",
-    status: "pending",
-    lastActivity: null,
-    openPRs: 0,
-    language: "TypeScript",
-    stars: 12,
-    forks: 3,
-    isSelected: false,
-  },
-  {
-    id: 4,
-    name: "docs",
-    fullName: "myorg/docs",
-    description: "Project documentation and guides",
-    status: "connected",
-    lastActivity: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    openPRs: 1,
-    language: "Markdown",
-    stars: 8,
-    forks: 15,
-    isSelected: false,
-  },
-  {
-    id: 5,
-    name: "data-pipeline",
-    fullName: "myorg/data-pipeline",
-    description: "ETL data processing pipeline",
-    status: "error",
-    lastActivity: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    openPRs: 2,
-    language: "Python",
-    stars: 15,
-    forks: 6,
-    isSelected: false,
-  },
-  {
-    id: 6,
-    name: "auth-service",
-    fullName: "myorg/auth-service",
-    description: "Authentication and authorization microservice",
-    status: "connected",
-    lastActivity: new Date(Date.now() - 12 * 60 * 60 * 1000),
-    openPRs: 2,
-    language: "Node.js",
-    stars: 9,
-    forks: 4,
-    isSelected: false,
-  },
-];
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "connected":
-      return <CheckCircle className="h-4 w-4 text-green-600" />;
-    case "pending":
-      return <Clock className="h-4 w-4 text-orange-600" />;
-    case "error":
-      return <AlertCircle className="h-4 w-4 text-red-600" />;
-    default:
-      return <GitBranch className="h-4 w-4" />;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "connected":
-      return "bg-green-100 text-green-800";
-    case "pending":
-      return "bg-orange-100 text-orange-800";
-    case "error":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
-const getLanguageColor = (language: string) => {
-  const colors: Record<string, string> = {
-    TypeScript: "bg-blue-100 text-blue-800",
-    Go: "bg-cyan-100 text-cyan-800",
-    Python: "bg-yellow-100 text-yellow-800",
-    "Node.js": "bg-green-100 text-green-800",
-    Markdown: "bg-gray-100 text-gray-800",
-  };
-  return colors[language] || "bg-gray-100 text-gray-800";
-};
-
-interface RepositoriesListProps {
-  selectedRepos: number[];
-  onRepoSelect: (repoId: number, selected: boolean) => void;
-  onSelectAll: (selected: boolean) => void;
-  searchQuery: string;
-  statusFilter: string;
-  languageFilter: string;
-  sortBy: string;
+// Empty state component
+function EmptyState() {
+  return (
+    <Card className="border-dashed">
+      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="rounded-full bg-muted p-4 mb-4">
+          <AlertCircle className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h3 className="font-semibold text-lg mb-2">No repositories found</h3>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Try adjusting your search or filter criteria to find what you're
+          looking for.
+        </p>
+      </CardContent>
+    </Card>
+  );
 }
 
-export function RepositoriesList({
-  selectedRepos,
-  onRepoSelect,
-  onSelectAll,
-  searchQuery,
-  statusFilter,
-  languageFilter,
-  sortBy,
-}: RepositoriesListProps) {
-  const filteredRepos = mockRepositories
-    .filter((repo) => {
-      if (
-        searchQuery &&
-        !repo.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !repo.description.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false;
-      }
-      if (statusFilter !== "all" && repo.status !== statusFilter) {
-        return false;
-      }
-      if (
-        languageFilter !== "all" &&
-        repo.language.toLowerCase() !== languageFilter
-      ) {
-        return false;
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "activity":
-          return (
-            (b.lastActivity?.getTime() || 0) - (a.lastActivity?.getTime() || 0)
-          );
-        case "prs":
-          return b.openPRs - a.openPRs;
-        case "status":
-          return a.status.localeCompare(b.status);
-        default:
-          return 0;
-      }
-    });
-
+// Error state component
+function ErrorState() {
   return (
-    <div className="space-y-2">
+    <Card className="border-destructive">
+      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="rounded-full bg-destructive/10 p-4 mb-4">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+        </div>
+        <h3 className="font-semibold text-lg mb-2">
+          Failed to load repositories
+        </h3>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          There was an error loading your repositories. Please try again later.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function RepositoriesList() {
+  const {
+    data,
+    isPending,
+    isError,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+  } = useRepositories();
+  const [params] = useQueryStates(searchParamsSchema);
+  const allRepos = data?.pages.flatMap((page) => page) || [];
+
+  const filteredRepos = allRepos.filter((repo) => {
+    const matchesSearch =
+      repo.name.toLowerCase().includes(params.repoSearch.toLowerCase()) ||
+      repo.full_name.toLowerCase().includes(params.repoSearch.toLowerCase());
+
+    const matchesStatus =
+      params.status === "all" ||
+      (params.status === "public" && !repo.private) ||
+      (params.status === "private" && repo.private);
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Loading state - show skeleton cards
+  if (isPending) {
+    return (
+      <div className="space-y-2">
+        {[...Array(5)].map((_, i) => (
+          <RepositoryCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return <ErrorState />;
+  }
+
+  // Empty state
+  if (filteredRepos.length === 0) {
+    return <EmptyState />;
+  }
+
+  // Success state with data
+  return (
+    <div className="space-y-3">
       {filteredRepos.map((repo) => (
-        <Card key={repo.id} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 flex-1">
-                <Checkbox
-                  checked={selectedRepos.includes(repo.id)}
-                  onCheckedChange={(checked) =>
-                    onRepoSelect(repo.id, checked as boolean)
-                  }
-                />
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary/10">
+        <Card
+          key={repo.id}
+          className="group hover:shadow-lg hover:border-primary/20 transition-all duration-200"
+        >
+          <CardContent className="p-5 relative">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center space-x-4 flex-1 min-w-0">
+                <Avatar className="h-12 w-12 border-2 border-muted">
+                  <AvatarImage src={repo.owner.avatar_url} alt={repo.name} />
+                  <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary/5 text-primary font-semibold">
                     {repo.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-lg truncate">
-                      {repo.fullName}
+                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <h3 className="font-semibold text-base truncate group-hover:text-primary transition-colors">
+                      {repo.name}
                     </h3>
-                    {getStatusIcon(repo.status)}
-                    <Badge
-                      variant="outline"
-                      className={getStatusColor(repo.status)}
-                    >
-                      {repo.status}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={getLanguageColor(repo.language)}
-                    >
-                      {repo.language}
-                    </Badge>
+
+                    {repo.language && (
+                      <Badge
+                        variant="outline"
+                        className={`${getLanguageColor(repo.language)} text-xs`}
+                      >
+                        {repo.language}
+                      </Badge>
+                    )}
+                    {repo.private && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs gap-1 flex items-center"
+                      >
+                        <Lock className="h-3 w-3" />
+                        Private
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-                    {repo.description}
-                  </p>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3 w-3" />
-                      <span>{repo.stars}</span>
+
+                  {repo.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
+                      {repo.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                    <div className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+                      <Star className="h-3.5 w-3.5" />
+                      <span className="font-medium">
+                        {repo.stargazers_count.toLocaleString()}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <GitFork className="h-3 w-3" />
-                      <span>{repo.forks}</span>
+                    <div className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+                      <GitFork className="h-3.5 w-3.5" />
+                      <span className="font-medium">
+                        {repo.forks.toLocaleString()}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <GitPullRequest className="h-3 w-3" />
-                      <span>{repo.openPRs} PRs</span>
-                    </div>
-                    <span>
-                      {repo.lastActivity
-                        ? `Updated ${formatDistanceToNow(repo.lastActivity, {
+                    <span className="text-xs">
+                      {repo.updated_at
+                        ? `Updated ${formatDistanceToNow(repo.updated_at, {
                             addSuffix: true,
                           })}`
                         : "No recent activity"}
@@ -256,19 +179,64 @@ export function RepositoriesList({
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline">
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  View Details
+              <div className="flex gap-2 pt-2 flex-wrap">
+                <Button className="min-w-30 hover:bg-primary/90 transition-colors flex-1 md:flex-none">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Connect Repository
                 </Button>
-                <Button size="sm" variant="outline">
-                  <Settings className="h-3 w-3" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="hover:bg-secondary transition-colors"
+                  asChild
+                >
+                  <Link
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                    Visit
+                  </Link>
                 </Button>
               </div>
             </div>
+
+            {/* Status Badge */}
+            {repo.isConnected && (
+              <Badge
+                className={cn(
+                  getStatusColor(repo.isConnected ? "connected" : "pending"), // expects "connected", "pending", etc.
+                  "absolute top-3 right-3 text-xs flex items-center gap-1 px-2 py-1"
+                )}
+              >
+                {repo.isConnected ? "Connected" : "Pending"}
+              </Badge>
+            )}
           </CardContent>
         </Card>
       ))}
+
+      {/* Load More Button */}
+      {hasNextPage && (
+        <div className="flex justify-center pt-4">
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            variant="outline"
+            size="lg"
+          >
+            {isFetchingNextPage ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Loading more...
+              </>
+            ) : (
+              "Load more repositories"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

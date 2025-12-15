@@ -83,7 +83,7 @@ model Organization {
   name        String
   description String?
   ownerId     String
-  owner       User     @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  owner       User     @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members     User[]   @relation("OrganizationMembers")
   repos       Repo[]
   createdAt   DateTime @default(now())
@@ -97,13 +97,14 @@ model Repo {
   id             String        @id @default(cuid())
   name           String
   fullName       String        @unique
-  githubId       String        @unique
+  githubId       BigInt        @unique
   ownerId        String
-  owner          User          @relation(fields: [ownerId], references: [id])
+  owner          User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   webhookId      String?
   webhookSecret  String?
+  url            String
   prs            PR[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -120,9 +121,9 @@ model PR {
   description String?
   githubId    String   @unique
   repoId      String
-  repo        Repo     @relation(fields: [repoId], references: [id])
+  repo        Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   status      PRStatus @default(open)
   runs        Run[]
   createdAt   DateTime @default(now())
@@ -136,9 +137,9 @@ model PR {
 model Run {
   id        String     @id @default(cuid())
   prId      String
-  pr        PR         @relation(fields: [prId], references: [id])
+  pr        PR         @relation(fields: [prId], references: [id], onDelete: Cascade)
   personaId String
-  persona   Persona    @relation(fields: [personaId], references: [id])
+  persona   Persona    @relation(fields: [personaId], references: [id], onDelete: Cascade)
   status    RunStatus  @default(pending)
   comments  Comment[]
   feedback  Feedback[]
@@ -156,7 +157,7 @@ model Persona {
   description String
   prompt      String
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   runs        Run[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -168,7 +169,7 @@ model Persona {
 model Comment {
   id        String   @id @default(cuid())
   runId     String
-  run       Run      @relation(fields: [runId], references: [id])
+  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
   filePath  String
   line      Int?
   content   String
@@ -183,9 +184,9 @@ model Comment {
 model Feedback {
   id        String   @id @default(cuid())
   runId     String
-  run       Run      @relation(fields: [runId], references: [id])
+  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rating    Int // 1-5
   comment   String?
   createdAt DateTime @default(now())

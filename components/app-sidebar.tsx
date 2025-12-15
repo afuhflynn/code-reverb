@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSubButton,
 } from "./ui/sidebar";
+import { Skeleton } from "./ui/skeleton";
 import { FaGithub } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -30,7 +31,7 @@ import { LogOut } from "lucide-react";
 
 export const AppSidebar = () => {
   const pathName = usePathname();
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const router = useRouter();
 
   const isActive = (href: string) => {
@@ -48,6 +49,55 @@ export const AppSidebar = () => {
     .toUpperCase()
     .slice(0, 2);
 
+  // Loading state for the entire sidebar
+  if (isPending) {
+    return (
+      <Sidebar>
+        <SidebarHeader className="border-b">
+          <div className="flex flex-col gap-4 px-2 py-6">
+            <div className="flex items-center gap-4 px-3 py-4 rounded-lg bg-sidebar-accent/50">
+              <Skeleton className="w-12 h-12 rounded-lg" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
+          </div>
+        </SidebarHeader>
+
+        <SidebarContent className="px-3 py-6 flex-col gap-1">
+          <div className="mb-2">
+            <Skeleton className="h-3 w-16 px-3 mb-3" />
+          </div>
+          <SidebarMenu className="gap-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <SidebarMenuItem key={i}>
+                <div className="h-11 px-4 rounded-lg flex items-center gap-3">
+                  <Skeleton className="size-5 rounded" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+
+        <SidebarFooter className="border-t px-3 py-4">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <div className="h-12 px-4 rounded-lg w-full flex items-center gap-3">
+                <Skeleton className="h-9 w-9 rounded-lg" />
+                <div className="grid flex-1 gap-1.5">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+    );
+  }
+
   return (
     <Sidebar>
       <SidebarHeader className="border-b">
@@ -58,8 +108,7 @@ export const AppSidebar = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-sidebar-foreground tracking-wide">
-                {" "}
-                Connected Account{" "}
+                Connected Account
               </p>
               <p className="text-sm font-medium text-sidebar-foreground/90">
                 @{userName}
@@ -82,7 +131,7 @@ export const AppSidebar = () => {
                 asChild
                 tooltip={item.name}
                 className={cn(
-                  "h-11 px-4 rounded-lg transition-all  duration-200",
+                  "h-11 px-4 rounded-lg transition-all duration-200",
                   isActive(item.href)
                     ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
                     : "hover:bg-sidebar-accent/60 text-sidebar-foreground"
@@ -100,6 +149,7 @@ export const AppSidebar = () => {
           ))}
         </SidebarMenu>
       </SidebarContent>
+
       <SidebarFooter className="border-t px-3 py-4">
         <SidebarMenu>
           <SidebarMenuItem>

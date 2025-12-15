@@ -12,17 +12,6 @@ export function RepositoriesHeader() {
           Manage and monitor all your connected repositories
         </p>
       </div>
-
-      <div className="flex gap-2">
-        <Button variant="outline" className="gap-2">
-          <Settings className="h-4 w-4" />
-          Bulk Actions
-        </Button>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Connect Repository
-        </Button>
-      </div>
     </div>
   );
 }
