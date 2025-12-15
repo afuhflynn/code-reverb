@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String         @id @default(cuid())
+  name               String
+  email              String
+  emailVerified      Boolean        @default(false)
+  image              String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  sessions           Session[]
+  accounts           Account[]
+  organizationId     String?
+  repos              Repo[]
+  prs                PR[]
+  personas           Persona[]
+  feedbacks          Feedback[]
+  organization       Organization?  @relation(fields: [organizationId], references: [id])
+  organizations      Organization[] @relation("OrganizationMembers")
+  ownedOrganizations Organization[] @relation("OrganizationOwner") // <-- back-relation
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  ownerId     String
+  owner       User     @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  members     User[]   @relation("OrganizationMembers")
+  repos       Repo[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+
+  @@map("organization")
+}
+
+model Repo {
+  id             String        @id @default(cuid())
+  name           String
+  fullName       String        @unique
+  githubId       String        @unique
+  ownerId        String
+  owner          User          @relation(fields: [ownerId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  webhookId      String?
+  webhookSecret  String?
+  prs            PR[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([ownerId])
+  @@index([organizationId])
+  @@map("repo")
+}
+
+model PR {
+  id          String   @id @default(cuid())
+  number      Int
+  title       String
+  description String?
+  githubId    String   @unique
+  repoId      String
+  repo        Repo     @relation(fields: [repoId], references: [id])
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  status      PRStatus @default(open)
+  runs        Run[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([repoId])
+  @@index([authorId])
+  @@map("pr")
+}
+
+model Run {
+  id        String     @id @default(cuid())
+  prId      String
+  pr        PR         @relation(fields: [prId], references: [id])
+  personaId String
+  persona   Persona    @relation(fields: [personaId], references: [id])
+  status    RunStatus  @default(pending)
+  comments  Comment[]
+  feedback  Feedback[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([prId])
+  @@index([personaId])
+  @@map("run")
+}
+
+model Persona {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  prompt      String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  runs        Run[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("persona")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  runId     String
+  run       Run      @relation(fields: [runId], references: [id])
+  filePath  String
+  line      Int?
+  content   String
+  githubId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([runId])
+  @@map("comment")
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  runId     String
+  run       Run      @relation(fields: [runId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([runId])
+  @@index([userId])
+  @@map("feedback")
+}
+
+model Embedding {
+  id        String   @id @default(cuid())
+  content   String
+  vector    Float[]
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@map("embedding")
+}
+
+enum PRStatus {
+  open
+  closed
+  merged
+}
+
+enum RunStatus {
+  pending
+  running
+  completed
+  failed
+}

@@ -1,0 +1,5 @@
+procs:
+  next:
+    cmd: ["pnpm", "dev"]
+  inngest:
+    cmd: ["pnpm", "inngest:start"]
