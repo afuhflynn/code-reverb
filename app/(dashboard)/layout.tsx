@@ -8,19 +8,12 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireAuth();
+  await requireAuth();
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <Header
-          user={{
-            name: session.user.name,
-            email: session.user.email,
-            image: session.user.image as string,
-          }}
-        />
-
+        <Header />
         <main className="flex-1 overflow-auto pt-4 md:pt-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
