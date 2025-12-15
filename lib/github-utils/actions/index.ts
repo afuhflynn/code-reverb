@@ -29,7 +29,7 @@ export async function getDashboardStats() {
     const { data: user } = await octokit.rest.users.getAuthenticated();
 
     // TODO: Fetch the total connected repos for the user.
-    const totalRepos = 30; // NOTE: Dummy data
+    const totalRepos = 60; // NOTE: Dummy data
 
     // Fetch user contribution stats
     const calendar = await fetchUserGithubContributions(user.login, token);
@@ -130,9 +130,9 @@ export async function getMonthlyActivity() {
       [key: string]: { commits: number; prs: number; reviews: number };
     } = {};
 
-    // Last 3 months data
+    // Last 6 months data
     const now = new Date();
-    for (let i = 2; i >= 0; i--) {
+    for (let i = 7; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const monthKey = months[date.getMonth()];
       monthlyData[monthKey] = { commits: 0, prs: 0, reviews: 0 };
@@ -149,18 +149,18 @@ export async function getMonthlyActivity() {
       });
     });
 
-    // Fetch reviews from database for last 3 months
+    // Fetch reviews from database for last 6 months
     const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 6);
 
     // TODO: REVIEWS'S REAL DATA
     const generateSampleReviews = () => {
       const sampleReviews = [];
       const now = new Date();
 
-      // Generate random reviews over the past 3 months
+      // Generate random reviews over the past 6 months
       for (let i = 0; i < 45; i++) {
-        const randomDaysAgo = Math.floor(Math.random() * 180); // Random day in last 3 months
+        const randomDaysAgo = Math.floor(Math.random() * 180); // Random day in last 6 months
         const reviewDate = new Date(now);
         reviewDate.setDate(reviewDate.getDate() - randomDaysAgo);
 
