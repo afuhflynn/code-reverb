@@ -16,10 +16,14 @@ import {
 import { toast } from "sonner";
 import { FaGithub } from "react-icons/fa6";
 import { MainLoader } from "@/components/loaders/main-loader";
+import { useQueryStates } from "nuqs";
+import { searchParamsSchema } from "@/nuqs";
 
 export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [params] = useQueryStates(searchParamsSchema);
+  const { redirect } = params;
 
   const handleSignIn = async () => {
     try {
@@ -38,6 +42,7 @@ export default function SignInPage() {
             toast.error("Sign in failed. Please try again.");
           },
         },
+        callbackURL: redirect || "/app",
       });
     } catch (err) {
       setError("Failed to sign in. Please try again.");
