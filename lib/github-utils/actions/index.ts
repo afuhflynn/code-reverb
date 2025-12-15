@@ -8,6 +8,11 @@ import { Octokit } from "octokit";
 import { prisma } from "@/lib/prisma";
 import { months } from "@/constants";
 
+interface DailyActivity {
+  date: string;
+  count: number;
+}
+
 /**
  * @description: This method gets user's dashboard stats
  */
@@ -28,7 +33,7 @@ export async function getDashboardStats() {
 
     // Fetch user contribution stats
     const calendar = await fetchUserGithubContributions(user.login, token);
-    const totalCmmits = calendar?.totalContributions || 0;
+    const totalCommits = calendar?.totalContributions || 0;
 
     // Count total prs from (db or github)
     const { data: PRs } = await octokit.rest.search.issuesAndPullRequests({
@@ -42,7 +47,7 @@ export async function getDashboardStats() {
     const totalReviews = 44;
 
     return {
-      totalCmmits,
+      totalCommits,
       totalPRs,
       totalReviews,
       totalRepos,
@@ -50,11 +55,51 @@ export async function getDashboardStats() {
   } catch (error) {
     console.error("Error fetching dashboard stats: ", error);
     return {
-      totalCmmits: 0,
+      totalCommits: 0,
       totalPRs: 0,
       totalReviews: 0,
       totalRepos: 0,
     };
+  }
+}
+
+/**
+ * @description: This method gets user's daily contribution data for the activity chart
+ */
+export async function getDailyContributions(): Promise<DailyActivity[]> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+
+    if (!session) throw new Error("Unauthorized");
+
+    const token = await getGithubToken();
+
+    // Get user's github username
+    const octokit = new Octokit({ auth: token });
+    const { data: user } = await octokit.rest.users.getAuthenticated();
+
+    // Fetch user contribution stats
+    const calendar = await fetchUserGithubContributions(user.login, token);
+
+    if (!calendar) {
+      return [];
+    }
+
+    // Flatten the calendar into daily activities
+    const dailyActivities: DailyActivity[] = [];
+    calendar.weeks.forEach((week) => {
+      week.contributionDays.forEach((day) => {
+        dailyActivities.push({
+          date: day.date as string,
+          count: day.contributionCount,
+        });
+      });
+    });
+
+    return dailyActivities;
+  } catch (error) {
+    console.error("Error fetching daily contributions:", error);
+    return [];
   }
 }
 
@@ -151,10 +196,13 @@ export async function getMonthlyActivity() {
     });
 
     return Object.keys(monthlyData).map((name) => ({
-      name,
-      ...monthlyData[name],
+      date: name,
+      commits: monthlyData[name].commits,
+      pullRequests: monthlyData[name].prs,
+      aiReviews: monthlyData[name].reviews,
     }));
   } catch (error) {
-    console.error("Error fethcing user monthly activity", error);
+    console.error("Error fetching user monthly activity", error);
+    return [];
   }
 }

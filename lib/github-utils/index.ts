@@ -3,6 +3,23 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 
+interface ContributionData {
+  user: {
+    contributionsCollection: {
+      contributionCalendar: {
+        totalContributions: number;
+        weeks: {
+          contributionDays: {
+            contributionCount: number;
+            date: string;
+            color: string;
+          }[];
+        }[];
+      };
+    };
+  };
+}
+
 /**
  * @description: This method gets user's github access token
  * @returns: [string] - Github AccessToken
@@ -30,14 +47,14 @@ export async function getGithubToken() {
 
 export async function fetchUserGithubContributions(
   username: string,
-  accessToken: string
+  accessToken: string,
 ) {
   const octokit = new Octokit({ auth: accessToken });
 
   const query = `
   query($username:String!) {
-    user(login:&username) {
-      contributionCollection {
+    user(login:$username) {
+      contributionsCollection {
         contributionCalendar {
           totalContributions
           weeks {
@@ -58,7 +75,7 @@ export async function fetchUserGithubContributions(
       username,
     });
 
-    return response.user.contributionCollection.contributionCalendar;
+    return response.user.contributionsCollection.contributionCalendar;
   } catch (error) {
     console.error(error);
     return null;
