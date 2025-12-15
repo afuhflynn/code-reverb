@@ -1,3 +1,4 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, Clock, GitBranch } from "lucide-react";
 
 export const getStatusColor = (status: string) => {
@@ -23,3 +24,40 @@ export const getLanguageColor = (language: string) => {
   };
   return colors[language] || "bg-gray-100 text-gray-800";
 };
+
+// Empty state component
+export function EmptyState() {
+  return (
+    <Card className="border-dashed">
+      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="rounded-full bg-muted p-4 mb-4">
+          <AlertCircle className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h3 className="font-semibold text-lg mb-2">No repositories found</h3>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Try adjusting your search or filter criteria to find what you're
+          looking for.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Error state component
+export function ErrorState() {
+  return (
+    <Card className="border-destructive">
+      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="rounded-full bg-destructive/10 p-4 mb-4">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+        </div>
+        <h3 className="font-semibold text-lg mb-2">
+          Failed to load repositories
+        </h3>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          There was an error loading your repositories. Please try again later.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}

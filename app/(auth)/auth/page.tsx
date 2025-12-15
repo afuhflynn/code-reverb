@@ -57,7 +57,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
-            Welcome to Code-Reverb
+            Welcome to Code Reverb
           </CardTitle>
           <CardDescription>
             Sign in with GitHub to start reviewing code with AI-powered insights

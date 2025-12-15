@@ -9,6 +9,7 @@ import { useQueryStates } from "nuqs";
 
 const RepositoriesPage = () => {
   const [params] = useQueryStates(searchParamsSchema);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 space-y-6">

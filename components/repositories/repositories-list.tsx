@@ -15,50 +15,19 @@ import {
   Plus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useRepositories } from "@/hooks";
+import { useConnectRepository, useRepositories } from "@/hooks";
 import { useQueryStates } from "nuqs";
 import { searchParamsSchema } from "@/nuqs";
-import { getLanguageColor, getStatusColor } from "@/utils";
+import {
+  EmptyState,
+  ErrorState,
+  getLanguageColor,
+  getStatusColor,
+} from "@/utils";
 import { RepositoryCardSkeleton } from "../skeletons/repo-loading";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Empty state component
-function EmptyState() {
-  return (
-    <Card className="border-dashed">
-      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-full bg-muted p-4 mb-4">
-          <AlertCircle className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h3 className="font-semibold text-lg mb-2">No repositories found</h3>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Try adjusting your search or filter criteria to find what you're
-          looking for.
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Error state component
-function ErrorState() {
-  return (
-    <Card className="border-destructive">
-      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-full bg-destructive/10 p-4 mb-4">
-          <AlertCircle className="h-8 w-8 text-destructive" />
-        </div>
-        <h3 className="font-semibold text-lg mb-2">
-          Failed to load repositories
-        </h3>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          There was an error loading your repositories. Please try again later.
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
+import { useEffect, useRef } from "react";
 
 export function RepositoriesList() {
   const {
@@ -71,6 +40,11 @@ export function RepositoriesList() {
   } = useRepositories();
   const [params] = useQueryStates(searchParamsSchema);
   const allRepos = data?.pages.flatMap((page) => page) || [];
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const { mutate: connectRepo, isPending: isConnectingRepo } =
+    useConnectRepository();
 
   const filteredRepos = allRepos.filter((repo) => {
     const matchesSearch =
@@ -85,6 +59,29 @@ export function RepositoriesList() {
     return matchesSearch && matchesStatus;
   });
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        rootMargin: "100px",
+        threshold: 0.1,
+      }
+    );
+
+    if (bottomRef.current) {
+      observer.observe(bottomRef.current);
+    }
+
+    return () => {
+      if (bottomRef.current) {
+        observer.unobserve(bottomRef.current);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   // Loading state - show skeleton cards
   if (isPending) {
     return (
@@ -180,9 +177,30 @@ export function RepositoriesList() {
               </div>
 
               <div className="flex gap-2 pt-2 flex-wrap">
-                <Button className="min-w-30 hover:bg-primary/90 transition-colors flex-1 md:flex-none">
-                  <Plus className="h-4 w-4 mr-1" />
-                  Connect Repository
+                <Button
+                  className={
+                    "min-w-30 hover:bg-primary/90 transition-colors flex-1 md:flex-none"
+                  }
+                  variant={repo.isConnected ? "secondary" : "default"}
+                  onClick={() =>
+                    connectRepo({
+                      owner: repo.owner.name as string,
+                      repo: repo.name,
+                      githubId: repo.id,
+                    })
+                  }
+                  disabled={repo.isConnected || isConnectingRepo}
+                >
+                  {isConnectingRepo ? (
+                    <>Connecting ...</>
+                  ) : repo.isConnected ? (
+                    <>Connected</>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Connect Repository
+                    </>
+                  )}
                 </Button>
                 <Button
                   size="sm"
@@ -217,26 +235,8 @@ export function RepositoriesList() {
         </Card>
       ))}
 
-      {/* Load More Button */}
-      {hasNextPage && (
-        <div className="flex justify-center pt-4">
-          <Button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            variant="outline"
-            size="lg"
-          >
-            {isFetchingNextPage ? (
-              <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Loading more...
-              </>
-            ) : (
-              "Load more repositories"
-            )}
-          </Button>
-        </div>
-      )}
+      {/* Bottom ref for infinite fetch */}
+      <div ref={bottomRef} />
     </div>
   );
 }

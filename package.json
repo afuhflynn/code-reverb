@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "inngest:dev": "inngest-cli dev",
+    "ngrok:dev": "ngrok http 3000",
     "dev:all": "mprocs",
     "build": "next build",
     "start": "next start",

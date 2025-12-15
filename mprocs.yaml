@@ -3,3 +3,5 @@ procs:
     cmd: ["pnpm", "dev"]
   inngest:
     cmd: ["pnpm", "inngest:dev"]
+  ngrok:
+    cmd: ["pnpm", "ngrok:dev"]

@@ -16,52 +16,16 @@ import { formatDistanceToNow } from "date-fns";
 import { useRepositories } from "@/hooks";
 import { useQueryStates } from "nuqs";
 import { searchParamsSchema } from "@/nuqs";
-import { getLanguageColor, getStatusColor } from "@/utils";
+import {
+  EmptyState,
+  ErrorState,
+  getLanguageColor,
+  getStatusColor,
+} from "@/utils";
 import { RepositoryGridCardSkeleton } from "../skeletons/repo-loading";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Empty state component
-function EmptyState() {
-  return (
-    <div className="col-span-full">
-      <Card className="border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="rounded-full bg-muted p-4 mb-4">
-            <AlertCircle className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="font-semibold text-lg mb-2">No repositories found</h3>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            Try adjusting your search or filter criteria to find what you're
-            looking for.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Error state component
-function ErrorState() {
-  return (
-    <div className="col-span-full">
-      <Card className="border-destructive">
-        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="rounded-full bg-destructive/10 p-4 mb-4">
-            <AlertCircle className="h-8 w-8 text-destructive" />
-          </div>
-          <h3 className="font-semibold text-lg mb-2">
-            Failed to load repositories
-          </h3>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            There was an error loading your repositories. Please try again
-            later.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+import { useEffect, useRef } from "react";
 
 export function RepositoriesGrid() {
   const {
@@ -75,6 +39,7 @@ export function RepositoriesGrid() {
   const [params] = useQueryStates(searchParamsSchema);
   const allRepos = data?.pages.flatMap((page) => page) || [];
 
+  const bottomRef = useRef<HTMLDivElement>(null);
   // Filter by search and status
   const filteredRepos = allRepos.filter((repo) => {
     const matchesSearch =
@@ -88,6 +53,30 @@ export function RepositoriesGrid() {
 
     return matchesSearch && matchesStatus;
   });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        rootMargin: "100px",
+        threshold: 0.1,
+      }
+    );
+
+    if (bottomRef.current) {
+      observer.observe(bottomRef.current);
+    }
+
+    return () => {
+      if (bottomRef.current) {
+        observer.unobserve(bottomRef.current);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
     <>
@@ -215,26 +204,8 @@ export function RepositoriesGrid() {
           ))}
       </div>
 
-      {/* Load More Button */}
-      {!isPending && !isError && hasNextPage && (
-        <div className="flex justify-center pt-6">
-          <Button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            variant="outline"
-            size="lg"
-          >
-            {isFetchingNextPage ? (
-              <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Loading more...
-              </>
-            ) : (
-              "Load more repositories"
-            )}
-          </Button>
-        </div>
-      )}
+      {/* Bottom ref for infinite fetch */}
+      <div ref={bottomRef} />
     </>
   );
 }

@@ -8,10 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, X, MoreHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import { useQueryStates, debounce } from "nuqs";
 import { searchParamsSchema } from "@/nuqs";
-import { Button } from "../ui/button";
 
 export function RepositoriesFilters() {
   const [params, setParams] = useQueryStates(searchParamsSchema);
@@ -67,10 +66,6 @@ export function RepositoriesFilters() {
             <SelectItem value="list">List</SelectItem>
           </SelectContent>
         </Select>
-
-        <Button variant="ghost" size="sm">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );

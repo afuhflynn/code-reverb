@@ -3,14 +3,21 @@
  */
 
 import { api } from "@/lib/api-client";
+import { Repo } from "@/lib/generated/prisma/client";
 import {
   getDailyContributions,
   getDashboardStats,
   getMonthlyActivity,
 } from "@/lib/github-utils/actions";
-import { fetchRespositories } from "@/lib/repository/actions";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { connectRepo, fetchRespositories } from "@/lib/repository/actions";
+import {
+  QueryClient,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 import { ALL } from "node:dns";
+import { toast } from "sonner";
 
 export function useUserProfile() {
   return useQuery({
@@ -101,5 +108,52 @@ export function useRepositories() {
       return allPages.length + 1;
     },
     initialPageParam: 1,
+  });
+}
+
+interface RepoWithConnected extends Repo {
+  isConnected: boolean;
+}
+
+export function useConnectRepository() {
+  const queryClient = new QueryClient();
+  return useMutation({
+    mutationKey: ["create-webhook", "connect-repo"],
+    mutationFn: async ({
+      owner,
+      repo,
+      githubId,
+    }: {
+      owner: string;
+      repo: string;
+      githubId: number;
+    }) => await connectRepo(owner, repo, githubId),
+    onMutate(variables) {
+      variables.githubId;
+      // temporarily update the ui (Optimistic ui)
+      queryClient.setQueryData(["repositories"], (prev: RepoWithConnected[]) =>
+        prev.map((repo) => {
+          if (repo.githubId === BigInt(variables.githubId))
+            repo.isConnected = true;
+          return repo;
+        })
+      );
+    },
+    onSuccess: () => {
+      toast.success("Repository connected succesfully :)");
+      queryClient.invalidateQueries({ queryKey: ["repositories"] });
+    },
+    onError: (error, variables) => {
+      console.error(error);
+      toast.error("Failed to connect repository :(");
+      // Undo the optimistic ui
+      queryClient.setQueryData(["repositories"], (prev: RepoWithConnected[]) =>
+        prev.map((repo) => {
+          if (repo.githubId === BigInt(variables.githubId))
+            repo.isConnected = true;
+          return repo;
+        })
+      );
+    },
   });
 }

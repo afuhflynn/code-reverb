@@ -100,7 +100,24 @@ export function ActivityChart() {
     return years.length ? years : [new Date().getFullYear()];
   }, [dailyActivities]);
 
-  // ---------- Loading UI ----------
+  const monthLabels = useMemo(() => {
+    const labels: { month: string; index: number }[] = [];
+    for (let m = 0; m < 12; m++) {
+      const date = new Date(selectedYear, m, 1);
+      const weekIdx = Math.floor(
+        (date.getTime() - new Date(selectedYear, 0, 1).getTime()) /
+          (1000 * 60 * 60 * 24 * 7)
+      );
+      labels.push({
+        month: date.toLocaleString("default", { month: "short" }),
+        index: weekIdx,
+      });
+    }
+    return labels;
+  }, [selectedYear]);
+
+  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
   if (isPending) {
     return (
       <Card className="overflow-hidden">
@@ -119,7 +136,6 @@ export function ActivityChart() {
     );
   }
 
-  // ---------- Error / Empty Fallback ----------
   if (isError || !dailyActivities || dailyActivities.length === 0) {
     return (
       <Card>
@@ -137,7 +153,6 @@ export function ActivityChart() {
     );
   }
 
-  // ---------- Real UI ----------
   return (
     <Card>
       <CardHeader>
@@ -153,7 +168,7 @@ export function ActivityChart() {
             value={selectedYear.toString()}
             onValueChange={(v) => setSelectedYear(Number(v))}
           >
-            <SelectTrigger className="w-[120px]">
+            <SelectTrigger className="w-30">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -169,32 +184,78 @@ export function ActivityChart() {
 
       <CardContent className="overflow-x-auto">
         <TooltipProvider delayDuration={0}>
-          <div className="grid grid-flow-col auto-cols-min gap-1.5 min-w-max">
-            {Array.from({ length: 53 }).map((_, weekIdx) => (
-              <div key={weekIdx} className="grid grid-rows-7 gap-1.5">
-                {Array.from({ length: 7 }).map((_, dayIdx) => {
-                  const day = activities[weekIdx * 7 + dayIdx];
-                  if (!day) return <div key={dayIdx} />;
+          <div className="flex">
+            <div className="grid grid-rows-7 gap-1.5 mr-2">
+              {dayLabels.map((label, i) => (
+                <div key={i} className="text-xs text-muted-foreground">
+                  {["Mon", "Wed", "Fri"].includes(label) ? label : ""}
+                </div>
+              ))}
+            </div>
 
-                  const level = getActivityLevel(day.count);
-                  const date = new Date(day.date).toDateString();
-
-                  return (
-                    <Tooltip key={day.date}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={`h-3 w-3 rounded-sm ${activityColors[level]}`}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {day.count || "No"} contribution
-                        {day.count === 1 ? "" : "s"} on {date}
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
+            <div className="flex flex-col">
+              <div className="flex gap-1.5 mb-2 ml-6">
+                {monthLabels.map(({ month, index }) => (
+                  <div
+                    key={month}
+                    style={{ gridColumnStart: index + 1 }}
+                    className="text-xs text-muted-foreground"
+                  >
+                    {month}
+                  </div>
+                ))}
               </div>
+
+              <div className="grid grid-flow-col auto-cols-min gap-1.5 min-w-max">
+                {Array.from({ length: 53 }).map((_, weekIdx) => (
+                  <div key={weekIdx} className="grid grid-rows-7 gap-1.5">
+                    {Array.from({ length: 7 }).map((_, dayIdx) => {
+                      const day = activities[weekIdx * 7 + dayIdx];
+                      if (!day) return <div key={dayIdx} />;
+
+                      const level = getActivityLevel(day.count);
+                      const formattedDate = new Date(
+                        day.date
+                      ).toLocaleDateString(undefined, {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      });
+
+                      return (
+                        <Tooltip key={day.date}>
+                          <TooltipTrigger asChild>
+                            <div
+                              aria-label={`${day.count} contributions on ${formattedDate}`}
+                              role="button"
+                              className={`h-3 w-3 rounded-sm ${activityColors[level]}`}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-card text-foreground">
+                            {day.count || "No"} contribution
+                            {day.count === 1 ? "" : "s"} on {formattedDate}
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-4">
+            <span>Less</span>
+            {Object.keys(activityColors).map((level) => (
+              <div
+                key={level}
+                className={`h-3 w-3 rounded-sm ${
+                  activityColors[Number(level)]
+                }`}
+              />
             ))}
+            <span>More</span>
           </div>
         </TooltipProvider>
       </CardContent>
