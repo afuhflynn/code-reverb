@@ -103,13 +103,13 @@ export function ActivityChart() {
   // ---------- Loading UI ----------
   if (isPending) {
     return (
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader className="space-y-2">
           <Skeleton className="h-6 w-64" />
           <Skeleton className="h-4 w-48" />
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-flow-col auto-cols-min gap-1.5">
+        <CardContent className="overflow-hidden">
+          <div className="grid grid-flow-col auto-cols-min gap-1.5 overflow-hidden">
             {Array.from({ length: 53 * 7 }).map((_, i) => (
               <Skeleton key={i} className="h-3 w-3 rounded-sm" />
             ))}
