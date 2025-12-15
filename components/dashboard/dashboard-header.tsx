@@ -1,21 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Plus, GitBranch, User, BarChart3, HelpCircle } from "lucide-react";
+import { GitBranch, User, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
+import Link from "next/link";
 
-interface DashboardHeaderProps {
-  user: {
-    name?: string | null;
-    email?: string | null;
-  };
-}
-
-export function DashboardHeader({ user }: DashboardHeaderProps) {
-  const router = useRouter();
-  const displayName = user.name || user.email?.split("@")[0] || "Developer";
+export function DashboardHeader() {
+  const { data: session } = useSession();
+  const user = session?.user;
+  const displayName = user?.name || user?.email?.split("@")[0] || "Developer";
 
   return (
     <div
@@ -33,40 +27,28 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
       <div className="flex flex-wrap gap-2">
         <Button
-          id="quick-action-new-review"
-          className="gap-2"
-          onClick={() => router.push("/repositories")}
-        >
-          <Plus className="h-4 w-4" />
-          New Review
-        </Button>
-        <Button
           id="quick-action-connect-repo"
           variant="outline"
           className="gap-2"
-          onClick={() => router.push("/repositories")}
+          asChild
         >
-          <GitBranch className="h-4 w-4" />
-          Connect Repository
+          <Link href="/repositories">
+            <GitBranch className="h-4 w-4" />
+            Connect Repository
+          </Link>
         </Button>
         <Button
           id="quick-action-create-persona"
           variant="outline"
           className="gap-2"
-          onClick={() => router.push("/personas")}
+          asChild
         >
-          <User className="h-4 w-4" />
-          Create Persona
+          <Link href="/personas">
+            <User className="h-4 w-4" />
+            Create Persona
+          </Link>
         </Button>
-        <Button
-          id="quick-action-view-analytics"
-          variant="outline"
-          className="gap-2"
-          onClick={() => router.push("/reviews")}
-        >
-          <BarChart3 className="h-4 w-4" />
-          View Analytics
-        </Button>
+
         <Button
           id="help-button"
           variant="ghost"

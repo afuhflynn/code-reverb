@@ -33,7 +33,7 @@ export function useUser(id: string) {
 
 export function useUsers() {
   return useQuery({
-    queryKey: ["code-reverb", "user"],
+    queryKey: ["code-reverb", "users"],
     queryFn: api.queries.users.getMany,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 10 * 60 * 1000, // 10 minutes
