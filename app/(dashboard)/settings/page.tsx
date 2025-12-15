@@ -3,7 +3,7 @@ import { SettingsSidebar } from "@/components/settings/settings-sidebar";
 import { SettingsContent } from "@/components/settings/settings-content";
 
 export default async function SettingsPage() {
-  const session = await requireAuth();
+  const session = await requireAuth("/settings");
 
   return (
     <div className="min-h-screen bg-background">

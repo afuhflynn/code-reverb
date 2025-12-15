@@ -7,7 +7,7 @@ import { CommunityPersonas } from "@/components/personas/community-personas";
 import { PromptAssistant } from "@/components/personas/prompt-assistant";
 
 export default async function PersonasPage() {
-  const session = await requireAuth();
+  const session = await requireAuth("/personas");
 
   return (
     <div className="min-h-screen bg-background">

@@ -9,7 +9,7 @@ interface RepositoryPageProps {
 }
 
 export default async function RepositoryPage({ params }: RepositoryPageProps) {
-  const session = await requireAuth();
+  const session = await requireAuth("/repositories");
   const { id } = await params;
 
   // In a real app, you'd fetch repository data based on the ID

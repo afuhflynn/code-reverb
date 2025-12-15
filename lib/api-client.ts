@@ -8,6 +8,7 @@
  */
 
 import { privateAxios } from "@/config/axios.config";
+import { User } from "./generated/prisma/client";
 
 // Helper function for making authenticated requests
 async function apiRequest<T>(
@@ -62,6 +63,15 @@ async function apiRequest<T>(
 
 // API Methods
 export const api = {
-  queries: {},
+  queries: {
+    users: {
+      getProfile: (): Promise<User | null> =>
+        apiRequest("/users/profile", { method: "GET" }),
+      getById: (id: string): Promise<User | null> =>
+        apiRequest(`/users/${id}`, { method: "GET" }),
+      getMany: (): Promise<User[] | null> =>
+        apiRequest(`/users`, { method: "GET" }),
+    },
+  },
   mutations: {},
 };

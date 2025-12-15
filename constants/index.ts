@@ -8,3 +8,18 @@ export const navigation = [
   { name: "Personas", href: "/personas", icon: Bot },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
+
+export const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
