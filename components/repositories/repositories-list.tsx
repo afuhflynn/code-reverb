@@ -11,6 +11,8 @@ import {
   Clock,
   AlertCircle,
   GitPullRequest,
+  Star,
+  GitFork,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -26,6 +28,7 @@ const mockRepositories = [
     openPRs: 3,
     language: "TypeScript",
     stars: 45,
+    forks: 12,
     isSelected: false,
   },
   {
@@ -38,6 +41,7 @@ const mockRepositories = [
     openPRs: 5,
     language: "Go",
     stars: 23,
+    forks: 8,
     isSelected: false,
   },
   {
@@ -50,6 +54,7 @@ const mockRepositories = [
     openPRs: 0,
     language: "TypeScript",
     stars: 12,
+    forks: 3,
     isSelected: false,
   },
   {
@@ -62,6 +67,7 @@ const mockRepositories = [
     openPRs: 1,
     language: "Markdown",
     stars: 8,
+    forks: 15,
     isSelected: false,
   },
   {
@@ -74,6 +80,7 @@ const mockRepositories = [
     openPRs: 2,
     language: "Python",
     stars: 15,
+    forks: 6,
     isSelected: false,
   },
   {
@@ -86,6 +93,7 @@ const mockRepositories = [
     openPRs: 2,
     language: "Node.js",
     stars: 9,
+    forks: 4,
     isSelected: false,
   },
 ];
@@ -127,7 +135,7 @@ const getLanguageColor = (language: string) => {
   return colors[language] || "bg-gray-100 text-gray-800";
 };
 
-interface RepositoriesGridProps {
+interface RepositoriesListProps {
   selectedRepos: number[];
   onRepoSelect: (repoId: number, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
@@ -137,7 +145,7 @@ interface RepositoriesGridProps {
   sortBy: string;
 }
 
-export function RepositoriesGrid({
+export function RepositoriesList({
   selectedRepos,
   onRepoSelect,
   onSelectAll,
@@ -145,7 +153,7 @@ export function RepositoriesGrid({
   statusFilter,
   languageFilter,
   sortBy,
-}: RepositoriesGridProps) {
+}: RepositoriesListProps) {
   const filteredRepos = mockRepositories
     .filter((repo) => {
       if (
@@ -184,12 +192,12 @@ export function RepositoriesGrid({
     });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="space-y-2">
       {filteredRepos.map((repo) => (
         <Card key={repo.id} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4 flex-1">
                 <Checkbox
                   checked={selectedRepos.includes(repo.id)}
                   onCheckedChange={(checked) =>
@@ -201,51 +209,55 @@ export function RepositoriesGrid({
                     {repo.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-              </div>
-              <Badge variant="outline" className={getStatusColor(repo.status)}>
-                {getStatusIcon(repo.status)}
-                <span className="ml-1">{repo.status}</span>
-              </Badge>
-            </div>
 
-            <div className="space-y-3">
-              <div>
-                <h3 className="font-semibold text-lg leading-tight">
-                  {repo.fullName}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                  {repo.description}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <Badge
-                  variant="outline"
-                  className={getLanguageColor(repo.language)}
-                >
-                  {repo.language}
-                </Badge>
-                <div className="flex items-center gap-1">
-                  <GitPullRequest className="h-3 w-3" />
-                  <span>{repo.openPRs} PRs</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-lg truncate">
+                      {repo.fullName}
+                    </h3>
+                    {getStatusIcon(repo.status)}
+                    <Badge
+                      variant="outline"
+                      className={getStatusColor(repo.status)}
+                    >
+                      {repo.status}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={getLanguageColor(repo.language)}
+                    >
+                      {repo.language}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
+                    {repo.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3" />
+                      <span>{repo.stars}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <GitFork className="h-3 w-3" />
+                      <span>{repo.forks}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <GitPullRequest className="h-3 w-3" />
+                      <span>{repo.openPRs} PRs</span>
+                    </div>
+                    <span>
+                      {repo.lastActivity
+                        ? `Updated ${formatDistanceToNow(repo.lastActivity, {
+                            addSuffix: true,
+                          })}`
+                        : "No recent activity"}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="text-xs text-muted-foreground">
-                {repo.lastActivity ? (
-                  <span>
-                    Updated{" "}
-                    {formatDistanceToNow(repo.lastActivity, {
-                      addSuffix: true,
-                    })}
-                  </span>
-                ) : (
-                  <span>No recent activity</span>
-                )}
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1">
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   View Details
                 </Button>

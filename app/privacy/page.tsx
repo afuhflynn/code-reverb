@@ -79,7 +79,7 @@ export default function PrivacyPage() {
         <h2>6. Contact Us</h2>
         <p>
           If you have any questions about this Privacy Policy, please contact us
-          at privacy@code-reverb.com.
+          at privacy@code-reverb.dev.
         </p>
       </div>
     </div>

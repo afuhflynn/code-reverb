@@ -39,22 +39,26 @@ An AI-powered code review platform that integrates with GitHub to provide intell
 ### Local Development
 
 1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/your-org/code-reverb.git
+   git clone https://github.com/afuhflynn/code-reverb.git
    cd code-reverb
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env.local
    ```
 
    Configure the following variables:
+
    ```env
    # Database
    DATABASE_URL="postgresql://user:password@localhost:5432/code_reverb"
@@ -85,6 +89,7 @@ An AI-powered code review platform that integrates with GitHub to provide intell
    ```
 
 4. **Set up the database**
+
    ```bash
    # Start PostgreSQL (using Docker)
    docker-compose up -d postgres
@@ -97,11 +102,13 @@ An AI-powered code review platform that integrates with GitHub to provide intell
    ```
 
 5. **Start Inngest (optional for local dev)**
+
    ```bash
    docker-compose up -d inngest
    ```
 
 6. **Run the development server**
+
    ```bash
    pnpm dev
    ```
@@ -126,7 +133,7 @@ pnpm start
 
 ## Project Structure
 
-```
+```txt
 code-reverb/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -175,6 +182,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Documentation**: [docs.code-reverb.com](https://docs.code-reverb.com)
+- **Documentation**: [docs.code-reverb.dev](https://docs.code-reverb.dev)
 - **Issues**: [GitHub Issues](https://github.com/your-org/code-reverb/issues)
-- **Email**: support@code-reverb.com
+- **Email**: [Code-Reverb Support](support@code-reverb.dev)

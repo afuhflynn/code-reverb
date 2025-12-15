@@ -8,13 +8,25 @@ import {
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
-export function RepositoriesActions() {
+interface RepositoriesActionsProps {
+  viewMode: "grid" | "list";
+  onViewModeChange: (mode: "grid" | "list") => void;
+  selectedCount: number;
+  totalCount: number;
+}
+
+export function RepositoriesActions({
+  viewMode,
+  onViewModeChange,
+  selectedCount,
+  totalCount,
+}: RepositoriesActionsProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t">
       {/* Bulk Actions */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">
-          6 repositories selected
+          {selectedCount} repositories selected
         </span>
         <Select>
           <SelectTrigger className="w-40">
@@ -36,7 +48,7 @@ export function RepositoriesActions() {
       {/* Pagination */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">
-          Showing 1-6 of 24 repositories
+          Showing 1-{totalCount} of {totalCount} repositories
         </span>
 
         <div className="flex items-center gap-1">
@@ -64,7 +76,7 @@ export function RepositoriesActions() {
 
       {/* View Options */}
       <div className="flex items-center gap-2">
-        <Select defaultValue="grid">
+        <Select value={viewMode} onValueChange={onViewModeChange}>
           <SelectTrigger className="w-24">
             <SelectValue />
           </SelectTrigger>

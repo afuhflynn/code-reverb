@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://code-reverb.com"),
+  metadataBase: new URL("https://code-reverb.dev"),
   title: {
     default: "Code-Reverb - AI-Powered Code Review Platform",
     template: "%s | Code-Reverb",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://code-reverb.com",
+    url: "https://code-reverb.dev",
     title: "Code-Reverb - AI-Powered Code Review Platform",
     description:
       "Revolutionize your code reviews with AI-powered analysis. Get intelligent feedback on pull requests, automated bug detection, and personalized code suggestions.",
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
     yandex: "your-yandex-verification-code",
   },
   alternates: {
-    canonical: "https://code-reverb.com",
+    canonical: "https://code-reverb.dev",
   },
   category: "developer tools",
 };

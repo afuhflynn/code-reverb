@@ -27,17 +27,20 @@ Before you begin, ensure you have the following installed:
 ### Quick Start
 
 1. **Fork and Clone the Repository**
+
    ```bash
-   git clone https://github.com/YOUR_USERNAME/code-reverb.git
+   git clone https://github.com/afuhflynn/code-reverb.git
    cd code-reverb
    ```
 
 2. **Install Dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Set Up Environment Variables**
+
    ```bash
    cp .env.example .env.local
    ```
@@ -45,6 +48,7 @@ Before you begin, ensure you have the following installed:
    Fill in the required environment variables (see [Environment Setup](#environment-setup) below).
 
 4. **Set Up the Database**
+
    ```bash
    # Start PostgreSQL with Docker
    docker-compose up -d postgres
@@ -57,6 +61,7 @@ Before you begin, ensure you have the following installed:
    ```
 
 5. **Start Development Server**
+
    ```bash
    pnpm dev
    ```
@@ -133,7 +138,7 @@ pnpm inngest:start
 
 We follow conventional commit format:
 
-```
+```txt
 type(scope): description
 
 [optional body]
@@ -142,6 +147,7 @@ type(scope): description
 ```
 
 Types:
+
 - `feat`: New features
 - `fix`: Bug fixes
 - `docs`: Documentation
@@ -151,7 +157,8 @@ Types:
 - `chore`: Maintenance
 
 Examples:
-```
+
+```txt
 feat(auth): add GitHub OAuth integration
 fix(api): handle null user in session validation
 docs(readme): update installation instructions
@@ -160,6 +167,7 @@ docs(readme): update installation instructions
 ### Branch Naming
 
 Use descriptive branch names:
+
 - `feature/add-dark-mode`
 - `fix/login-validation`
 - `docs/update-contributing-guide`
@@ -273,7 +281,7 @@ We are committed to providing a welcoming and inclusive environment. Please:
 
 ## Getting Help
 
-- **Documentation**: Check our [docs](https://docs.code-reverb.com)
+- **Documentation**: Check our [docs](https://docs.code-reverb.dev)
 - **Issues**: Search existing issues first
 - **Discussions**: Use GitHub Discussions for questions
 - **Discord**: Join our community Discord
@@ -281,6 +289,7 @@ We are committed to providing a welcoming and inclusive environment. Please:
 ## Recognition
 
 Contributors are recognized in:
+
 - GitHub's contributor insights
 - Release notes
 - Our website's contributor page

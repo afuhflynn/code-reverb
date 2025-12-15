@@ -25,7 +25,7 @@ export class EmailService {
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
       const mailOptions = {
-        from: process.env.FROM_EMAIL || "noreply@code-reverb.com",
+        from: process.env.FROM_EMAIL || "noreply@code-reverb.dev",
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -44,7 +44,7 @@ export class EmailService {
     userEmail: string,
     prTitle: string,
     repoName: string,
-    reviewUrl: string,
+    reviewUrl: string
   ): Promise<void> {
     const subject = `AI Code Review Complete: ${prTitle}`;
     const html = `
@@ -108,7 +108,7 @@ export class EmailService {
   async sendErrorNotification(
     userEmail: string,
     error: string,
-    prTitle?: string,
+    prTitle?: string
   ): Promise<void> {
     const subject = `Code-Reverb Review Error${prTitle ? `: ${prTitle}` : ""}`;
     const html = `
@@ -121,7 +121,7 @@ export class EmailService {
         </div>
         <p>Please try again or contact support if the issue persists.</p>
         <p>
-          <a href="mailto:support@code-reverb.com" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+          <a href="mailto:support@code-reverb.dev" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
             Contact Support
           </a>
         </p>

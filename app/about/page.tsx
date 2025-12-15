@@ -79,7 +79,7 @@ export default function AboutPage() {
         <h2>Contact Us</h2>
         <p>
           Have questions or feedback? We'd love to hear from you. Reach out to
-          us at hello@code-reverb.com or visit our contact page.
+          us at hello@code-reverb.dev or visit our contact page.
         </p>
       </div>
     </div>

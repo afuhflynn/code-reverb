@@ -77,7 +77,7 @@ export default function CookiesPage() {
         <h2>5. Contact Us</h2>
         <p>
           If you have any questions about our use of cookies, please contact us
-          at cookies@code-reverb.com.
+          at cookies@code-reverb.dev.
         </p>
       </div>
     </div>

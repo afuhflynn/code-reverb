@@ -41,22 +41,22 @@ export default function ContactPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <h3>General Inquiries</h3>
-            <p>Email: hello@code-reverb.com</p>
+            <p>Email: hello@code-reverb.dev</p>
             <p>Response time: Within 24 hours</p>
           </div>
           <div>
             <h3>Technical Support</h3>
-            <p>Email: support@code-reverb.com</p>
+            <p>Email: support@code-reverb.dev</p>
             <p>Response time: Within 4 hours</p>
           </div>
           <div>
             <h3>Business & Partnerships</h3>
-            <p>Email: business@code-reverb.com</p>
+            <p>Email: business@code-reverb.dev</p>
             <p>Response time: Within 48 hours</p>
           </div>
           <div>
             <h3>Security & Privacy</h3>
-            <p>Email: security@code-reverb.com</p>
+            <p>Email: security@code-reverb.dev</p>
             <p>Response time: Within 12 hours</p>
           </div>
         </div>
