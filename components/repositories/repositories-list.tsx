@@ -27,9 +27,10 @@ import {
 import { RepositoryCardSkeleton } from "../skeletons/repo-loading";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function RepositoriesList() {
+  const [params] = useQueryStates(searchParamsSchema);
   const {
     data,
     isPending,
@@ -37,29 +38,19 @@ export function RepositoriesList() {
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
-  } = useRepositories();
-  const [params] = useQueryStates(searchParamsSchema);
+  } = useRepositories({ search: params.repoSearch, status: params.status });
   const allRepos = data?.pages.flatMap((page) => page) || [];
+  const [repoToConnect, setRepoToConnect] = useState<number | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const { mutate: connectRepo, isPending: isConnectingRepo } =
     useConnectRepository();
 
-  const filteredRepos = allRepos.filter((repo) => {
-    const matchesSearch =
-      repo.name.toLowerCase().includes(params.repoSearch.toLowerCase()) ||
-      repo.full_name.toLowerCase().includes(params.repoSearch.toLowerCase());
-
-    const matchesStatus =
-      params.status === "all" ||
-      (params.status === "public" && !repo.private) ||
-      (params.status === "private" && repo.private);
-
-    return matchesSearch && matchesStatus;
-  });
-
   useEffect(() => {
+    if (params.repoSearch !== "") {
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
@@ -99,14 +90,14 @@ export function RepositoriesList() {
   }
 
   // Empty state
-  if (filteredRepos.length === 0) {
+  if (allRepos.length === 0) {
     return <EmptyState />;
   }
 
   // Success state with data
   return (
     <div className="space-y-3">
-      {filteredRepos.map((repo) => (
+      {allRepos.map((repo) => (
         <Card
           key={repo.id}
           className="group hover:shadow-lg hover:border-primary/20 transition-all duration-200"
@@ -135,6 +126,7 @@ export function RepositoriesList() {
                         {repo.language}
                       </Badge>
                     )}
+
                     {repo.private && (
                       <Badge
                         variant="outline"
@@ -144,6 +136,18 @@ export function RepositoriesList() {
                         Private
                       </Badge>
                     )}
+                    {/* Status Badge */}
+                    <Badge
+                      variant={"outline"}
+                      className={cn(
+                        getStatusColor(
+                          repo.isConnected ? "connected" : "pending"
+                        ), // expects "connected", "pending", etc.
+                        "px-2 py-1"
+                      )}
+                    >
+                      {repo.isConnected ? "Connected" : "Pending"}
+                    </Badge>
                   </div>
 
                   {repo.description && (
@@ -182,16 +186,20 @@ export function RepositoriesList() {
                     "min-w-30 hover:bg-primary/90 transition-colors flex-1 md:flex-none"
                   }
                   variant={repo.isConnected ? "secondary" : "default"}
-                  onClick={() =>
+                  onClick={() => {
                     connectRepo({
-                      owner: repo.owner.name as string,
+                      owner: repo.full_name.split("/")[0],
                       repo: repo.name,
                       githubId: repo.id,
-                    })
+                    });
+                    setRepoToConnect(repo.id);
+                  }}
+                  disabled={
+                    repo.isConnected ||
+                    (isConnectingRepo && repoToConnect === repo.id)
                   }
-                  disabled={repo.isConnected || isConnectingRepo}
                 >
-                  {isConnectingRepo ? (
+                  {isConnectingRepo && repoToConnect === repo.id ? (
                     <>Connecting ...</>
                   ) : repo.isConnected ? (
                     <>Connected</>
@@ -219,18 +227,6 @@ export function RepositoriesList() {
                 </Button>
               </div>
             </div>
-
-            {/* Status Badge */}
-            {repo.isConnected && (
-              <Badge
-                className={cn(
-                  getStatusColor(repo.isConnected ? "connected" : "pending"), // expects "connected", "pending", etc.
-                  "absolute top-3 right-3 text-xs flex items-center gap-1 px-2 py-1"
-                )}
-              >
-                {repo.isConnected ? "Connected" : "Pending"}
-              </Badge>
-            )}
           </CardContent>
         </Card>
       ))}

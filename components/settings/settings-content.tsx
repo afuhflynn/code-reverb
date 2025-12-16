@@ -85,14 +85,6 @@ export function SettingsContent() {
             <Avatar className="h-20 w-20">
               <AvatarFallback className="text-lg">JD</AvatarFallback>
             </Avatar>
-            <div>
-              <Button variant="outline" size="sm">
-                Change Avatar
-              </Button>
-              <p className="text-sm text-muted-foreground mt-1">
-                JPG, PNG or GIF. Max size 2MB.
-              </p>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

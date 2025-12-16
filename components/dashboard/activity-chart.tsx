@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDailyActivityChart } from "@/hooks";
+import { DailyActivity } from "@/types";
 
 const getActivityLevel = (count: number): number => {
   if (count === 0) return 0;

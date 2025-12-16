@@ -26,8 +26,8 @@ export function RepositoriesFilters() {
             value={params.repoSearch || ""}
             onChange={(e) =>
               setParams(
-                { repoSearch: e.target.value },
-                { shallow: true, limitUrlUpdates: debounce(500) }
+                { repoSearch: e.target.value, status: null },
+                { shallow: false, limitUrlUpdates: debounce(500) }
               )
             }
           />
@@ -38,7 +38,7 @@ export function RepositoriesFilters() {
         <Select
           value={params.status}
           onValueChange={(v) => {
-            setParams({ status: v }, { shallow: true });
+            setParams({ status: v, repoSearch: null }, { shallow: false });
           }}
         >
           <SelectTrigger className="w-32">

@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle, Clock, GitBranch } from "lucide-react";
 export const getStatusColor = (status: string) => {
   switch (status) {
     case "connected":
-      return "bg-green-100 text-green-800";
+      return "py-4 bg-green-100/90 text-green-800";
     case "pending":
       return "bg-orange-100 text-orange-800";
     case "error":

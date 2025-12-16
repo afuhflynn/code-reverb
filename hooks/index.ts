@@ -11,10 +11,12 @@ import {
 } from "@/lib/github-utils/actions";
 import { connectRepo, fetchRespositories } from "@/lib/repository/actions";
 import {
+  InfiniteData,
   QueryClient,
   useInfiniteQuery,
   useMutation,
   useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { ALL } from "node:dns";
 import { toast } from "sonner";
@@ -96,11 +98,19 @@ export function useDailyActivityChart() {
 
 // repositories
 
-export function useRepositories() {
+export function useRepositories({
+  search,
+  status,
+}: { search?: string; status?: string } = {}) {
   return useInfiniteQuery({
-    queryKey: ["repositories"],
+    queryKey: ["repositories", search, status],
     queryFn: async ({ pageParam = 1 }) => {
-      const data = await fetchRespositories(pageParam, 10);
+      const data = await fetchRespositories(
+        pageParam,
+        10,
+        search ?? "",
+        status
+      );
       return data;
     },
     getNextPageParam: (lastPage, allPages) => {
@@ -108,17 +118,23 @@ export function useRepositories() {
       return allPages.length + 1;
     },
     initialPageParam: 1,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 }
 
 interface RepoWithConnected extends Repo {
   isConnected: boolean;
 }
+export function useConnectRepository({
+  search,
+  status,
+}: { search?: string; status?: string } = {}) {
+  const queryClient = useQueryClient();
 
-export function useConnectRepository() {
-  const queryClient = new QueryClient();
   return useMutation({
     mutationKey: ["create-webhook", "connect-repo"],
+
     mutationFn: async ({
       owner,
       repo,
@@ -127,33 +143,56 @@ export function useConnectRepository() {
       owner: string;
       repo: string;
       githubId: number;
-    }) => await connectRepo(owner, repo, githubId),
-    onMutate(variables) {
-      variables.githubId;
-      // temporarily update the ui (Optimistic ui)
-      queryClient.setQueryData(["repositories"], (prev: RepoWithConnected[]) =>
-        prev.map((repo) => {
-          if (repo.githubId === BigInt(variables.githubId))
-            repo.isConnected = true;
-          return repo;
-        })
+    }) => connectRepo(owner, repo, githubId),
+
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: ["repositories", search, status],
+      });
+
+      const previousData = queryClient.getQueryData<
+        InfiniteData<RepoWithConnected[]>
+      >(["repositories", search, status]);
+
+      queryClient.setQueryData<InfiniteData<RepoWithConnected[]>>(
+        ["repositories", search, status],
+        (old) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page) =>
+              page.map((repo) =>
+                repo.githubId === BigInt(variables.githubId)
+                  ? { ...repo, isConnected: true }
+                  : repo
+              )
+            ),
+          };
+        }
       );
+
+      return { previousData };
     },
-    onSuccess: () => {
-      toast.success("Repository connected succesfully :)");
-      queryClient.invalidateQueries({ queryKey: ["repositories"] });
-    },
-    onError: (error, variables) => {
-      console.error(error);
+
+    onError: (_err, _vars, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ["repositories", search, status],
+          context.previousData
+        );
+      }
       toast.error("Failed to connect repository :(");
-      // Undo the optimistic ui
-      queryClient.setQueryData(["repositories"], (prev: RepoWithConnected[]) =>
-        prev.map((repo) => {
-          if (repo.githubId === BigInt(variables.githubId))
-            repo.isConnected = true;
-          return repo;
-        })
-      );
+    },
+
+    onSuccess: () => {
+      toast.success("Repository connected successfully :)");
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["repositories", search, status],
+      });
     },
   });
 }

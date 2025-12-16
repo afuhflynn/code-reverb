@@ -7,13 +7,15 @@ import { createWebHook, getRepositories } from "@/lib/github-utils";
 
 export async function fetchRespositories(
   page: number = 1,
-  perPage: number = 10
+  perPage: number = 10,
+  search: string = "",
+  status: string = "all"
 ) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) throw new Error("Unauthorized");
 
-  const githubRepos = await getRepositories(page, perPage);
+  const githubRepos = await getRepositories(page, perPage, search, status);
   const dbRepos = await prisma.repo.findMany({
     where: {
       ownerId: session.user.id,

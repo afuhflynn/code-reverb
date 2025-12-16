@@ -1,3 +1,5 @@
+"use server";
+
 import { Octokit } from "octokit";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -84,7 +86,9 @@ export async function fetchUserGithubContributions(
 
 export const getRepositories = async (
   page: number = 1,
-  perPage: number = 10
+  perPage: number = 10,
+  search: string = "",
+  status: string = "all"
 ) => {
   const token = await getGithubToken();
   const octokit = new Octokit({ auth: token });
@@ -92,11 +96,25 @@ export const getRepositories = async (
   const { data } = await octokit.rest.repos.listForAuthenticatedUser({
     sort: "updated",
     direction: "desc",
-    visibility: "all",
+    visibility:
+      status === "all" ? "all" : status === "private" ? "private" : "public",
     per_page: perPage,
     page,
   });
 
+  if (search) {
+    // Only filter if there's a search term
+    const filtered = data.filter(
+      (r) =>
+        r.name.toLowerCase().includes(search.toLowerCase()) ||
+        r.full_name.toLowerCase().includes(search.toLowerCase()) ||
+        r.description?.toLowerCase().includes(search.toLowerCase()) ||
+        r.owner.login.toLowerCase().includes(search.toLowerCase())
+    );
+    return filtered;
+  }
+
+  // No search term → return all repos on the page
   return data;
 };
 
@@ -104,7 +122,7 @@ export const createWebHook = async (owner: string, repo: string) => {
   const token = await getGithubToken();
   const octokit = new Octokit({ auth: token });
 
-  const webHookUrl = `${process.env.NEXT_PUBLIC_PRODUCTION_BASE_URL}/api/webhooks/github`;
+  const webHookUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/github`;
 
   const { data: hooks } = await octokit.rest.repos.listWebhooks({
     owner,
