@@ -1,5 +1,3 @@
-import { Repo } from "./lib/generated/prisma/client";
-
 interface DailyActivity {
   date: string;
   count: number;

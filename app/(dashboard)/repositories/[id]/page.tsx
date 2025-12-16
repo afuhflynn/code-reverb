@@ -1,6 +1,6 @@
-import { requireAuth } from "@/lib/auth-utils";
 import { RepositoryHeader } from "@/components/repositories/repository-header";
 import { RepositoryTabs } from "@/components/repositories/repository-tabs";
+import { requireAuth } from "@/lib/auth-utils";
 
 interface RepositoryPageProps {
   params: Promise<{
@@ -9,7 +9,7 @@ interface RepositoryPageProps {
 }
 
 export default async function RepositoryPage({ params }: RepositoryPageProps) {
-  const session = await requireAuth("/repositories");
+  await requireAuth("/repositories");
   const { id } = await params;
 
   // In a real app, you'd fetch repository data based on the ID

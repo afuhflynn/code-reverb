@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - Code-Reverb",
+  title: "Privacy Policy - CodeReverb",
   description:
-    "Read Code-Reverb's privacy policy to understand how we collect, use, and protect your personal information when using our AI-powered code review platform.",
+    "Read CodeReverb's privacy policy to understand how we collect, use, and protect your personal information when using our AI-powered code review platform.",
   keywords: [
     "privacy policy",
     "data protection",
     "GDPR compliance",
     "personal information",
     "data security",
-    "Code-Reverb privacy",
+    "CodeReverb privacy",
   ],
   openGraph: {
-    title: "Privacy Policy - Code-Reverb",
+    title: "Privacy Policy - CodeReverb",
     description:
-      "Read Code-Reverb's privacy policy to understand how we collect, use, and protect your personal information when using our AI-powered code review platform.",
+      "Read CodeReverb's privacy policy to understand how we collect, use, and protect your personal information when using our AI-powered code review platform.",
     type: "website",
     url: "/privacy",
   },
   twitter: {
     card: "summary",
-    title: "Privacy Policy - Code-Reverb",
+    title: "Privacy Policy - CodeReverb",
     description:
-      "Read Code-Reverb's privacy policy to understand how we collect, use, and protect your personal information when using our AI-powered code review platform.",
+      "Read CodeReverb's privacy policy to understand how we collect, use, and protect your personal information when using our AI-powered code review platform.",
   },
   robots: {
     index: true,
@@ -79,7 +79,7 @@ export default function PrivacyPage() {
         <h2>6. Contact Us</h2>
         <p>
           If you have any questions about this Privacy Policy, please contact us
-          at privacy@code-reverb.dev.
+          at privacy@CodeReverb.dev.
         </p>
       </div>
     </div>

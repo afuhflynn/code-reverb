@@ -1,4 +1,25 @@
-import nodemailer from "nodemailer";
+import * as nodemailer from "nodemailer";
+import {
+  getWelcomeEmail,
+  getReviewCompleteEmail,
+  getReviewErrorEmail,
+  getEmailVerificationEmail,
+  getPasswordResetEmail,
+  getOtpEmail,
+  getRepositoryConnectedEmail,
+  getPersonaCreatedEmail,
+  getWebhookSetupEmail,
+  getLowCreditsEmail,
+  getSubscriptionConfirmationEmail,
+  getBillingInvoiceEmail,
+  getNewUserAlertEmail,
+  getSystemErrorAlertEmail,
+  getHighUsageAlertEmail,
+  getReviewFailureAlertEmail,
+  getSecurityAlertEmail,
+  getDailySummaryEmail,
+  getFailedPaymentAlertEmail,
+} from "./templates";
 
 export interface EmailOptions {
   to: string;
@@ -25,7 +46,7 @@ export class EmailService {
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
       const mailOptions = {
-        from: process.env.FROM_EMAIL || "noreply@code-reverb.dev",
+        from: process.env.FROM_EMAIL || "noreply@CodeReverb.dev",
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -40,34 +61,13 @@ export class EmailService {
     }
   }
 
-  async sendReviewCompleteNotification(
-    userEmail: string,
-    prTitle: string,
-    repoName: string,
-    reviewUrl: string
-  ): Promise<void> {
-    const subject = `AI Code Review Complete: ${prTitle}`;
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">AI Code Review Complete</h2>
-        <p>Hello,</p>
-        <p>Your pull request has been reviewed by our AI:</p>
-        <ul>
-          <li><strong>Repository:</strong> ${repoName}</li>
-          <li><strong>PR Title:</strong> ${prTitle}</li>
-        </ul>
-        <p>
-          <a href="${reviewUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-            View Review
-          </a>
-        </p>
-        <p>Thank you for using Code-Reverb!</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-        <p style="color: #666; font-size: 12px;">
-          This is an automated message from Code-Reverb. Please do not reply to this email.
-        </p>
-      </div>
-    `;
+  // ============================================================================
+  // USER EMAIL METHODS
+  // ============================================================================
+
+  async sendWelcomeEmail(userEmail: string, userName: string): Promise<void> {
+    const subject = "Welcome to CodeReverb!";
+    const html = getWelcomeEmail(userName);
 
     await this.sendEmail({
       to: userEmail,
@@ -76,30 +76,374 @@ export class EmailService {
     });
   }
 
-  async sendWelcomeEmail(userEmail: string, userName: string): Promise<void> {
-    const subject = "Welcome to Code-Reverb!";
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #333;">Welcome to Code-Reverb, ${userName}!</h2>
-        <p>Thank you for joining Code-Reverb, the AI-powered code review platform.</p>
-        <p>Get started by:</p>
-        <ol>
-          <li>Connecting your first GitHub repository</li>
-          <li>Creating or selecting an AI persona for reviews</li>
-          <li>Setting up webhooks for automatic reviews</li>
-        </ol>
-        <p>
-          <a href="${process.env.NEXTAUTH_URL}/dashboard" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-            Get Started
-          </a>
-        </p>
-        <p>Happy coding!</p>
-        <p>The Code-Reverb Team</p>
-      </div>
-    `;
+  async sendReviewCompleteNotification(
+    userEmail: string,
+    prTitle: string,
+    repoName: string,
+    reviewUrl: string,
+    userName?: string,
+    reviewSummary?: string,
+  ): Promise<void> {
+    const subject = `AI Code Review Complete: ${prTitle}`;
+    const html = getReviewCompleteEmail(
+      userName || "Developer",
+      prTitle,
+      repoName,
+      reviewUrl,
+      reviewSummary,
+    );
 
     await this.sendEmail({
       to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendReviewErrorNotification(
+    userEmail: string,
+    prTitle: string,
+    repoName: string,
+    error: string,
+    userName?: string,
+    retryUrl?: string,
+  ): Promise<void> {
+    const subject = `CodeReverb Review Error: ${prTitle}`;
+    const html = getReviewErrorEmail(
+      userName || "Developer",
+      prTitle,
+      repoName,
+      error,
+      retryUrl,
+    );
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendEmailVerification(
+    userEmail: string,
+    userName: string,
+    verificationUrl: string,
+  ): Promise<void> {
+    const subject = "Verify your CodeReverb account";
+    const html = getEmailVerificationEmail(userName, verificationUrl);
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendPasswordReset(
+    userEmail: string,
+    userName: string,
+    resetUrl: string,
+  ): Promise<void> {
+    const subject = "Reset your CodeReverb password";
+    const html = getPasswordResetEmail(userName, resetUrl);
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendOtp(
+    userEmail: string,
+    userName: string,
+    otp: string,
+  ): Promise<void> {
+    const subject = "Your CodeReverb verification code";
+    const html = getOtpEmail(userName, otp);
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendRepositoryConnected(
+    userEmail: string,
+    userName: string,
+    repoName: string,
+    setupUrl: string,
+  ): Promise<void> {
+    const subject = `Repository ${repoName} connected to CodeReverb`;
+    const html = getRepositoryConnectedEmail(userName, repoName, setupUrl);
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendPersonaCreated(
+    userEmail: string,
+    userName: string,
+    personaName: string,
+    personaUrl: string,
+  ): Promise<void> {
+    const subject = `AI Persona "${personaName}" created`;
+    const html = getPersonaCreatedEmail(userName, personaName, personaUrl);
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendWebhookSetup(
+    userEmail: string,
+    userName: string,
+    repoName: string,
+    webhookUrl: string,
+  ): Promise<void> {
+    const subject = `Webhooks configured for ${repoName}`;
+    const html = getWebhookSetupEmail(userName, repoName, webhookUrl);
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendLowCreditsAlert(
+    userEmail: string,
+    userName: string,
+    creditsRemaining: number,
+    upgradeUrl: string,
+  ): Promise<void> {
+    const subject = "Your CodeReverb credits are running low";
+    const html = getLowCreditsEmail(userName, creditsRemaining, upgradeUrl);
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendSubscriptionConfirmation(
+    userEmail: string,
+    userName: string,
+    planName: string,
+    amount: number,
+    billingUrl: string,
+  ): Promise<void> {
+    const subject = "Your CodeReverb subscription is confirmed";
+    const html = getSubscriptionConfirmationEmail(
+      userName,
+      planName,
+      amount,
+      billingUrl,
+    );
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendBillingInvoice(
+    userEmail: string,
+    userName: string,
+    planName: string,
+    amount: number,
+    billingPeriod: string,
+    invoiceUrl: string,
+  ): Promise<void> {
+    const subject = `Your CodeReverb invoice for ${billingPeriod}`;
+    const html = getBillingInvoiceEmail(
+      userName,
+      planName,
+      amount,
+      billingPeriod,
+      invoiceUrl,
+    );
+
+    await this.sendEmail({
+      to: userEmail,
+      subject,
+      html,
+    });
+  }
+
+  // ============================================================================
+  // ADMIN EMAIL METHODS
+  // ============================================================================
+
+  async sendNewUserAlert(
+    adminEmail: string,
+    adminName: string,
+    userName: string,
+    userEmail: string,
+    registrationDate: string,
+    adminUrl: string,
+  ): Promise<void> {
+    const subject = "New user registered on CodeReverb";
+    const html = getNewUserAlertEmail(
+      adminName,
+      userName,
+      userEmail,
+      registrationDate,
+      adminUrl,
+    );
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendSystemErrorAlert(
+    adminEmail: string,
+    adminName: string,
+    error: string,
+    timestamp: string,
+    details: string,
+    adminUrl: string,
+  ): Promise<void> {
+    const subject = "CodeReverb system error alert";
+    const html = getSystemErrorAlertEmail(
+      adminName,
+      error,
+      timestamp,
+      details,
+      adminUrl,
+    );
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendHighUsageAlert(
+    adminEmail: string,
+    adminName: string,
+    metric: string,
+    currentValue: string,
+    threshold: string,
+    adminUrl: string,
+  ): Promise<void> {
+    const subject = "CodeReverb high usage alert";
+    const html = getHighUsageAlertEmail(
+      adminName,
+      metric,
+      currentValue,
+      threshold,
+      adminUrl,
+    );
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendReviewFailureAlert(
+    adminEmail: string,
+    adminName: string,
+    prTitle: string,
+    repoName: string,
+    error: string,
+    adminUrl: string,
+  ): Promise<void> {
+    const subject = "CodeReverb review failure alert";
+    const html = getReviewFailureAlertEmail(
+      adminName,
+      prTitle,
+      repoName,
+      error,
+      adminUrl,
+    );
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendSecurityAlert(
+    adminEmail: string,
+    adminName: string,
+    alert: string,
+    severity: string,
+    details: string,
+    adminUrl: string,
+  ): Promise<void> {
+    const subject = `CodeReverb security alert - ${severity.toUpperCase()}`;
+    const html = getSecurityAlertEmail(
+      adminName,
+      alert,
+      severity,
+      details,
+      adminUrl,
+    );
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendDailySummary(
+    adminEmail: string,
+    adminName: string,
+    date: string,
+    stats: {
+      newUsers: number;
+      totalReviews: number;
+      failedReviews: number;
+      activeRepos: number;
+    },
+    adminUrl: string,
+  ): Promise<void> {
+    const subject = `CodeReverb daily summary - ${date}`;
+    const html = getDailySummaryEmail(adminName, date, stats, adminUrl);
+
+    await this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+    });
+  }
+
+  async sendFailedPaymentAlert(
+    adminEmail: string,
+    adminName: string,
+    userEmail: string,
+    amount: number,
+    failureReason: string,
+    adminUrl: string,
+  ): Promise<void> {
+    const subject = "CodeReverb failed payment alert";
+    const html = getFailedPaymentAlertEmail(
+      adminName,
+      userEmail,
+      amount,
+      failureReason,
+      adminUrl,
+    );
+
+    await this.sendEmail({
+      to: adminEmail,
       subject,
       html,
     });
@@ -108,9 +452,9 @@ export class EmailService {
   async sendErrorNotification(
     userEmail: string,
     error: string,
-    prTitle?: string
+    prTitle?: string,
   ): Promise<void> {
-    const subject = `Code-Reverb Review Error${prTitle ? `: ${prTitle}` : ""}`;
+    const subject = `CodeReverb Review Error${prTitle ? `: ${prTitle}` : ""}`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #dc3545;">Review Error</h2>
@@ -121,12 +465,12 @@ export class EmailService {
         </div>
         <p>Please try again or contact support if the issue persists.</p>
         <p>
-          <a href="mailto:support@code-reverb.dev" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+          <a href="mailto:support@CodeReverb.dev" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
             Contact Support
           </a>
         </p>
         <p>Sorry for the inconvenience.</p>
-        <p>The Code-Reverb Team</p>
+        <p>The CodeReverb Team</p>
       </div>
     `;
 

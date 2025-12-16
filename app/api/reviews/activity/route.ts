@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await requireAuth();
     const { searchParams } = new URL(request.url);
-    const hours = parseInt(searchParams.get("hours") || "24");
+    const hours = parseInt(searchParams.get("hours") || "24", 10);
 
     // Calculate time range
     const since = new Date(Date.now() - hours * 60 * 60 * 1000);
@@ -79,22 +79,24 @@ export async function GET(request: NextRequest) {
         run.status === "completed"
           ? "review_completed"
           : run.status === "running"
-            ? "review_started"
-            : run.status === "failed"
-              ? "review_failed"
-              : "review_started",
+          ? "review_started"
+          : run.status === "failed"
+          ? "review_failed"
+          : "review_started",
       title:
         run.status === "completed"
           ? `AI completed review of PR #${run.pr.number} in ${run.pr.repo.name}`
           : run.status === "running"
-            ? `AI began reviewing PR #${run.pr.number} in ${run.pr.repo.name}`
-            : `Review failed for PR #${run.pr.number} in ${run.pr.repo.name}`,
+          ? `AI began reviewing PR #${run.pr.number} in ${run.pr.repo.name}`
+          : `Review failed for PR #${run.pr.number} in ${run.pr.repo.name}`,
       description:
         run.status === "completed"
-          ? `Quality Score: ${run.feedback?.[0]?.rating ? `${run.feedback[0].rating}/10` : "N/A"} - Generated ${run._count?.comments || 0} insightful comments`
+          ? `Quality Score: ${
+              run.feedback?.[0]?.rating ? `${run.feedback[0].rating}/10` : "N/A"
+            } - Generated ${run._count?.comments || 0} insightful comments`
           : run.status === "running"
-            ? `Using ${run.persona.name} persona - ${run.pr.title}`
-            : `Will retry automatically`,
+          ? `Using ${run.persona.name} persona - ${run.pr.title}`
+          : `Will retry automatically`,
       timestamp: run.createdAt,
       user: "AI Assistant",
       metadata: {
@@ -132,7 +134,7 @@ export async function GET(request: NextRequest) {
     // For now, add a mock system activity if there are reviews
     if (recentRuns.length > 0) {
       const recentCompleted = recentRuns.filter(
-        (r) => r.status === "completed",
+        (r) => r.status === "completed"
       );
       if (recentCompleted.length > 0) {
         systemActivities.push({
@@ -141,7 +143,7 @@ export async function GET(request: NextRequest) {
           title: "AI quality score trending upward",
           description: "Based on recent feedback and learning algorithms",
           timestamp: new Date(
-            Date.now() - Math.random() * hours * 60 * 60 * 1000,
+            Date.now() - Math.random() * hours * 60 * 60 * 1000
           ),
           user: "AI Learning",
           metadata: {},
@@ -154,7 +156,7 @@ export async function GET(request: NextRequest) {
     console.error("Reviews activity GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch review activity" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

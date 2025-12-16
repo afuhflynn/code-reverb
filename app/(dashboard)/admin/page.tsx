@@ -1,9 +1,9 @@
-import { requireAuth } from "@/lib/auth-utils";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminContent } from "@/components/admin/admin-content";
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { requireAuth } from "@/lib/auth-utils";
 
 export default async function AdminPage() {
-  const session = await requireAuth("/admin");
+  await requireAuth("/admin");
 
   // TODO: Check if user is admin
   const isAdmin = true; // Mock for now

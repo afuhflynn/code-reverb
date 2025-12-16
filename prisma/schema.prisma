@@ -37,9 +37,19 @@ model User {
   organization       Organization?  @relation(fields: [organizationId], references: [id])
   organizations      Organization[] @relation("OrganizationMembers")
   ownedOrganizations Organization[] @relation("OrganizationOwner") // <-- back-relation
+  twofa              TWOFA?
 
   @@unique([email])
   @@map("user")
+}
+
+model TWOFA {
+  id     String  @id @default(cuid())
+  userId String  @unique
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secret String
+  qrCode String
+  token  String?
 }
 
 model Session {
@@ -70,7 +80,6 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
-  password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -147,19 +156,19 @@ model PR {
 }
 
 model Run {
-  id            String     @id @default(cuid())
-  prId          String
-  pr            PR         @relation(fields: [prId], references: [id], onDelete: Cascade)
-  personaId     String
-  persona       Persona    @relation(fields: [personaId], references: [id], onDelete: Cascade)
-  status        RunStatus  @default(pending)
-  processingTime Int?        // Processing time in milliseconds
-  tokensUsed     Int?        // AI tokens consumed
-  modelUsed      String?     // AI model used (e.g., "gemini-1.5-pro")
-  comments      Comment[]
-  feedback      Feedback[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id             String     @id @default(cuid())
+  prId           String
+  pr             PR         @relation(fields: [prId], references: [id], onDelete: Cascade)
+  personaId      String
+  persona        Persona    @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  status         RunStatus  @default(pending)
+  processingTime Int? // Processing time in milliseconds
+  tokensUsed     Int? // AI tokens consumed
+  modelUsed      String? // AI model used (e.g., "gemini-1.5-pro")
+  comments       Comment[]
+  feedback       Feedback[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   @@index([prId])
   @@index([personaId])
@@ -225,14 +234,14 @@ model Embedding {
 }
 
 model ApiKey {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
-  key       String   @unique
-  type      String   // github, webhook, api
+  key       String    @unique
+  type      String // github, webhook, api
   lastUsed  DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([userId])
   @@map("api_key")

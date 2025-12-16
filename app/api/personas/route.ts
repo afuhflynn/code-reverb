@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
 
 const defaultPersonas = [
   {
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
           avatar: "🤖", // Default avatar
           tags: ["custom"],
         };
-      }),
+      })
     );
 
     return NextResponse.json({
@@ -207,7 +207,7 @@ export async function GET(request: NextRequest) {
     console.error("Personas GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch personas" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
     if (!validationResult.success) {
       return NextResponse.json(
         { error: "Validation failed", details: validationResult.error.issues },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
     console.error("Personas POST error:", error);
     return NextResponse.json(
       { error: "Failed to create persona" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

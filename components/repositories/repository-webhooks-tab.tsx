@@ -40,7 +40,7 @@ const mockWebhooks = [
   },
   {
     id: 2,
-    url: "https://slack.example.com/code-reverb",
+    url: "https://slack.example.com/CodeReverb",
     events: ["pull_request_review"],
     secret: "wh_sec_abcdef1234567890",
     active: true,

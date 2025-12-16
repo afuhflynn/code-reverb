@@ -2,6 +2,7 @@ import {
   createLoader,
   parseAsInteger,
   parseAsString,
+  parseAsStringEnum,
   SingleParserBuilder,
   Values,
 } from "nuqs";
@@ -14,6 +15,14 @@ export const searchParamsSchema = {
   repoSearch: parseAsString.withDefault(""),
   status: parseAsString.withDefault("all"),
   viewMode: parseAsString.withDefault("list"),
+  settings_tab: parseAsStringEnum([
+    "profile",
+    "notifications",
+    "ai",
+    "privacy",
+    "appearance",
+    "organization",
+  ]).withDefault("profile"),
 };
 
 type ParamsTypes = Values<{
@@ -24,6 +33,7 @@ type ParamsTypes = Values<{
   repoSearch: SingleParserBuilder<string>;
   status: SingleParserBuilder<string>;
   viewMode: SingleParserBuilder<string>;
+  settings_tab: SingleParserBuilder<string>;
 }>;
 
 // Helper function to build URLs with current params

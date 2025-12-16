@@ -1,24 +1,52 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import qrcode from "qrcode";
+import speakeasy from "speakeasy";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
-import speakeasy from "speakeasy";
-import qrcode from "qrcode";
 
 export async function POST() {
   try {
     const session = await requireAuth();
 
+    const user = await prisma.user.findFirst({
+      where: { id: session.user.id },
+    });
     // Generate a secret for TOTP
     const secret = speakeasy.generateSecret({
-      name: `Code-Reverb (${session.user.email})`,
-      issuer: "Code-Reverb",
+      name: `CodeReverb (${session.user.email} - ${session.user.name
+        .split(" ")
+        .slice(0, 2)
+        .join(" ")})`,
+      issuer: "CodeReverb",
     });
-
-    // Store the secret temporarily (in production, you'd store it securely)
-    // For demo, we'll just return it - in real app, save to user record with temp flag
 
     const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url!);
 
+    // save secret and qrCode to db
+    const twoFa = await prisma.tWOFA.upsert({
+      where: {
+        userId: session.user.id,
+      },
+      update: {
+        qrCode: qrCodeUrl,
+        secret: secret.base32,
+      },
+      create: {
+        userId: session.user.id,
+        qrCode: qrCodeUrl,
+        secret: secret.base32,
+      },
+    });
+
+    if (!twoFa) {
+      return NextResponse.json(
+        {
+          error: "Failed to initialize two factor authenticatin.",
+          success: false,
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({
       secret: secret.base32,
       qrCode: qrCodeUrl,

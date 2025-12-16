@@ -26,7 +26,7 @@ export function DashboardTour() {
         {
           element: "#dashboard-header",
           popover: {
-            title: "Welcome to Code-Reverb! 👋",
+            title: "Welcome to CodeReverb! 👋",
             description:
               "This is your AI-powered code review command center. Let's explore the key areas that will help you review code more effectively.",
           },
@@ -52,7 +52,7 @@ export function DashboardTour() {
           popover: {
             title: "AI Smart Suggestions 🤖",
             description:
-              "This is where Code-Reverb's AI shines! Get personalized recommendations, code quality alerts, and persona suggestions based on your review patterns.",
+              "This is where CodeReverb's AI shines! Get personalized recommendations, code quality alerts, and persona suggestions based on your review patterns.",
           },
         },
         {

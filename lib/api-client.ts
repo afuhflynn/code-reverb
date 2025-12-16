@@ -16,7 +16,7 @@ async function apiRequest<T>(
   options: {
     body?: unknown;
     method: "POST" | "PUT" | "PATCH" | "DELETE" | "GET";
-  },
+  }
 ): Promise<T | null> {
   try {
     let response: { data?: T } | undefined;
@@ -25,7 +25,7 @@ async function apiRequest<T>(
       case "GET":
         response = await privateAxios.get<T>(
           endpoint,
-          options.body ? { params: options.body } : {},
+          options.body ? { params: options.body } : {}
         );
         break;
       case "DELETE":
@@ -46,14 +46,9 @@ async function apiRequest<T>(
     }
 
     return response?.data ?? null;
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "response" in error) {
-      const axiosError = error as { response?: { data?: { error?: string } } };
-      if (axiosError.response?.data?.error) {
-        throw new Error(axiosError.response.data.error);
-      }
-    }
-    throw new Error("Sorry, an unexpected error occurred");
+  } catch (error: Error | any) {
+    if (error.response?.data) throw new Error(error.response?.data.error);
+    else throw new Error("Sorry, an unexpected error occurred");
   }
 }
 

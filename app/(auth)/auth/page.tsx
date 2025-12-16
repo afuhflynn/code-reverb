@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-
 // Note: Metadata is handled by the auth layout
-
-import { signIn } from "@/lib/auth-client";
+import { useQueryStates } from "nuqs";
+import { useState } from "react";
+import { FaGithub } from "react-icons/fa6";
+import { toast } from "sonner";
+import { MainLoader } from "@/components/loaders/main-loader";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,10 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "sonner";
-import { FaGithub } from "react-icons/fa6";
-import { MainLoader } from "@/components/loaders/main-loader";
-import { useQueryStates } from "nuqs";
+import { signIn } from "@/lib/auth-client";
 import { searchParamsSchema } from "@/nuqs";
 
 export default function SignInPage() {

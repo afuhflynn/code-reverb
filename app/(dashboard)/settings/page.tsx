@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { SettingsSidebar } from "@/components/settings/settings-sidebar";
 import { SettingsContent } from "@/components/settings/settings-content";
+import { SettingsSidebar } from "@/components/settings/settings-sidebar";
+import { useQueryStates } from "nuqs";
+import { searchParamsSchema } from "@/nuqs";
 
 export default function SettingsPage() {
-  const [activeSection, setActiveSection] = useState("profile");
+  const [params, setParams] = useQueryStates(searchParamsSchema);
   const [hasChanges, setHasChanges] = useState(false);
 
   return (
@@ -22,15 +24,17 @@ export default function SettingsPage() {
           {/* Settings Navigation Sidebar */}
           <div className="lg:col-span-1">
             <SettingsSidebar
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
+              activeSection={params.settings_tab}
+              setActiveSection={(v) =>
+                setParams({ ...params, settings_tab: v })
+              }
             />
           </div>
 
           {/* Main Content Area */}
           <div className="lg:col-span-3">
             <SettingsContent
-              activeSection={activeSection}
+              activeSection={params.settings_tab}
               hasChanges={hasChanges}
               setHasChanges={setHasChanges}
             />

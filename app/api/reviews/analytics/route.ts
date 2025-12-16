@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
             total,
             successful,
           };
-        }),
+        })
       );
 
       // Average review time by persona
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
             persona: persona.name,
             avgTime: Math.round(avgTime / 1000), // Convert to seconds
           };
-        }),
+        })
       );
 
       // Quality distribution
@@ -101,12 +101,12 @@ export async function GET(request: NextRequest) {
             count,
             percentage: 0, // Will calculate after getting total
           };
-        }),
+        })
       );
 
       const totalFeedback = qualityDistribution.reduce(
         (sum, item) => sum + item.count,
-        0,
+        0
       );
       qualityDistribution.forEach((item) => {
         item.percentage =
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
             persona: persona.name,
             effectiveness: Math.round(effectiveness * 100) / 100,
           };
-        }),
+        })
       );
 
       return NextResponse.json({
@@ -172,13 +172,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Invalid analytics type" },
-      { status: 400 },
+      { status: 400 }
     );
   } catch (error) {
     console.error("Reviews analytics GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch review analytics" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

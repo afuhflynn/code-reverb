@@ -9,6 +9,11 @@ export async function GET() {
 
     // For demo purposes, return mock session data
     // In production, you'd query your session store
+    const sessions = await prisma.session.findMany({
+      where: { userId: session.user.id },
+    });
+
+    console.log({ sessions });
     const mockSessions = [
       {
         id: "current-session",
@@ -31,7 +36,7 @@ export async function GET() {
     console.error("Sessions GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch sessions" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -48,7 +53,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Sessions DELETE error:", error);
     return NextResponse.json(
       { error: "Failed to revoke sessions" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

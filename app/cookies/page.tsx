@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy - Code-Reverb",
+  title: "Cookie Policy - CodeReverb",
   description:
-    "Learn about how Code-Reverb uses cookies to improve your experience on our AI-powered code review platform. Understand our cookie policy and your privacy rights.",
+    "Learn about how CodeReverb uses cookies to improve your experience on our AI-powered code review platform. Understand our cookie policy and your privacy rights.",
   keywords: [
     "cookie policy",
     "cookies",
     "privacy",
     "data collection",
     "web analytics",
-    "Code-Reverb cookies",
+    "CodeReverb cookies",
   ],
   openGraph: {
-    title: "Cookie Policy - Code-Reverb",
+    title: "Cookie Policy - CodeReverb",
     description:
-      "Learn about how Code-Reverb uses cookies to improve your experience on our AI-powered code review platform. Understand our cookie policy and your privacy rights.",
+      "Learn about how CodeReverb uses cookies to improve your experience on our AI-powered code review platform. Understand our cookie policy and your privacy rights.",
     type: "website",
     url: "/cookies",
   },
   twitter: {
     card: "summary",
-    title: "Cookie Policy - Code-Reverb",
+    title: "Cookie Policy - CodeReverb",
     description:
-      "Learn about how Code-Reverb uses cookies to improve your experience on our AI-powered code review platform. Understand our cookie policy and your privacy rights.",
+      "Learn about how CodeReverb uses cookies to improve your experience on our AI-powered code review platform. Understand our cookie policy and your privacy rights.",
   },
   robots: {
     index: true,
@@ -77,7 +77,7 @@ export default function CookiesPage() {
         <h2>5. Contact Us</h2>
         <p>
           If you have any questions about our use of cookies, please contact us
-          at cookies@code-reverb.dev.
+          at cookies@CodeReverb.dev.
         </p>
       </div>
     </div>

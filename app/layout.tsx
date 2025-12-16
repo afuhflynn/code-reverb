@@ -17,10 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://code-reverb.dev"),
+  metadataBase: new URL("https://CodeReverb.dev"),
   title: {
-    default: "Code-Reverb - AI-Powered Code Review Platform",
-    template: "%s | Code-Reverb",
+    default: "CodeReverb - AI-Powered Code Review Platform",
+    template: "%s | CodeReverb",
   },
   description:
     "Revolutionize your code reviews with AI-powered analysis. Get intelligent feedback on pull requests, automated bug detection, and personalized code suggestions using Google Gemini and OpenAI.",
@@ -36,9 +36,9 @@ export const metadata: Metadata = {
     "OpenAI",
     "software development",
   ],
-  authors: [{ name: "Code-Reverb Team" }],
-  creator: "Code-Reverb",
-  publisher: "Code-Reverb",
+  authors: [{ name: "CodeReverb Team" }],
+  creator: "CodeReverb",
+  publisher: "CodeReverb",
   formatDetection: {
     email: false,
     address: false,
@@ -47,23 +47,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://code-reverb.dev",
-    title: "Code-Reverb - AI-Powered Code Review Platform",
+    url: "https://CodeReverb.dev",
+    title: "CodeReverb - AI-Powered Code Review Platform",
     description:
       "Revolutionize your code reviews with AI-powered analysis. Get intelligent feedback on pull requests, automated bug detection, and personalized code suggestions.",
-    siteName: "Code-Reverb",
+    siteName: "CodeReverb",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Code-Reverb - AI-Powered Code Review Platform",
+        alt: "CodeReverb - AI-Powered Code Review Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Code-Reverb - AI-Powered Code Review Platform",
+    title: "CodeReverb - AI-Powered Code Review Platform",
     description:
       "Revolutionize your code reviews with AI-powered analysis. Get intelligent feedback on pull requests, automated bug detection, and personalized code suggestions.",
     images: ["/og-image.png"],
@@ -85,7 +85,7 @@ export const metadata: Metadata = {
     yandex: "your-yandex-verification-code",
   },
   alternates: {
-    canonical: "https://code-reverb.dev",
+    canonical: "https://CodeReverb.dev",
   },
   category: "developer tools",
 };

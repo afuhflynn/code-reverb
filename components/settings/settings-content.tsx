@@ -156,20 +156,6 @@ export function SettingsContent({
     qualityThreshold: 7.0,
   });
 
-<<<<<<< HEAD
-  const renderProfileSettings = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-6">
-            <Avatar className="h-20 w-20">
-              <AvatarFallback className="text-lg">JD</AvatarFallback>
-            </Avatar>
-          </div>
-=======
   const [privacyData, setPrivacyData] = useState({
     analytics: true,
     dataSharing: false,
@@ -217,7 +203,7 @@ export function SettingsContent({
 
     if (profileData.website && !profileData.website.match(/^https?:\/\/.+/)) {
       toast.error(
-        "Website must be a valid URL starting with http:// or https://",
+        "Website must be a valid URL starting with http:// or https://"
       );
       return;
     }
@@ -269,7 +255,7 @@ export function SettingsContent({
       !organizationData.website.match(/^https?:\/\/.+/)
     ) {
       toast.error(
-        "Website must be a valid URL starting with http:// or https://",
+        "Website must be a valid URL starting with http:// or https://"
       );
       return;
     }
@@ -455,7 +441,6 @@ export function SettingsContent({
                 </p>
               </div>
             </div>
->>>>>>> feat/settings
 
             <div>
               <Label htmlFor="profile-bio">Bio</Label>
@@ -557,50 +542,6 @@ export function SettingsContent({
     );
   };
 
-  const handlePasswordChange = () => {
-    // Validation
-    if (!passwordData.currentPassword) {
-      toast.error("Current password is required");
-      return;
-    }
-
-    if (!passwordData.newPassword) {
-      toast.error("New password is required");
-      return;
-    }
-
-    if (passwordData.newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters long");
-      return;
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("New passwords don't match");
-      return;
-    }
-
-    if (passwordData.currentPassword === passwordData.newPassword) {
-      toast.error("New password must be different from current password");
-      return;
-    }
-
-    changePassword.mutate(
-      {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      },
-      {
-        onSuccess: () => {
-          setPasswordData({
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-          });
-        },
-      },
-    );
-  };
-
   const handleSetup2FA = () => {
     setup2FA.mutate(undefined, {
       onSuccess: (data) => {
@@ -622,7 +563,7 @@ export function SettingsContent({
       !/^\d{6}$/.test(twoFAData.token)
     ) {
       toast.error(
-        "Please enter a valid 6-digit code from your authenticator app",
+        "Please enter a valid 6-digit code from your authenticator app"
       );
       return;
     }
@@ -643,7 +584,7 @@ export function SettingsContent({
             qrCode: "",
           });
         },
-      },
+      }
     );
   };
 
@@ -711,15 +652,6 @@ export function SettingsContent({
               className="mt-1"
             />
           </div>
-          <Button
-            onClick={handlePasswordChange}
-            disabled={changePassword.isPending}
-          >
-            {changePassword.isPending ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : null}
-            Update Password
-          </Button>
         </CardContent>
       </Card>
 
@@ -843,7 +775,11 @@ export function SettingsContent({
                     {session.location} •{" "}
                     {session.current
                       ? "Active now"
-                      : `${Math.floor((Date.now() - new Date(session.lastActive).getTime()) / (1000 * 60 * 60))} hours ago`}
+                      : `${Math.floor(
+                          (Date.now() -
+                            new Date(session.lastActive).getTime()) /
+                            (1000 * 60 * 60)
+                        )} hours ago`}
                   </p>
                 </div>
                 {session.current ? (
@@ -1364,7 +1300,7 @@ export function SettingsContent({
                               setShowApiKeyDialog(false);
                               setNewApiKeyName("");
                             },
-                          },
+                          }
                         );
                       }}
                       disabled={createApiKey.isPending}
@@ -1551,7 +1487,7 @@ export function SettingsContent({
             <p className="text-sm text-muted-foreground mt-2">
               Next billing date:{" "}
               {new Date(
-                billing.subscription.currentPeriodEnd,
+                billing.subscription.currentPeriodEnd
               ).toLocaleDateString()}
             </p>
           )}

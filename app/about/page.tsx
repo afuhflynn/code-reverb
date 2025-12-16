@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Code-Reverb",
+  title: "About CodeReverb",
   description:
-    "Learn about Code-Reverb, an AI-powered code review platform that helps development teams deliver higher quality code faster through intelligent automated analysis.",
+    "Learn about CodeReverb, an AI-powered code review platform that helps development teams deliver higher quality code faster through intelligent automated analysis.",
   keywords: [
-    "about Code-Reverb",
+    "about CodeReverb",
     "AI code review platform",
     "automated code analysis",
     "GitHub integration",
@@ -13,27 +13,27 @@ export const metadata: Metadata = {
     "developer productivity",
   ],
   openGraph: {
-    title: "About Code-Reverb - AI-Powered Code Review Platform",
+    title: "About CodeReverb - AI-Powered Code Review Platform",
     description:
-      "Learn about Code-Reverb, an AI-powered code review platform that helps development teams deliver higher quality code faster through intelligent automated analysis.",
+      "Learn about CodeReverb, an AI-powered code review platform that helps development teams deliver higher quality code faster through intelligent automated analysis.",
     type: "website",
     url: "/about",
   },
   twitter: {
     card: "summary",
-    title: "About Code-Reverb - AI-Powered Code Review Platform",
+    title: "About CodeReverb - AI-Powered Code Review Platform",
     description:
-      "Learn about Code-Reverb, an AI-powered code review platform that helps development teams deliver higher quality code faster through intelligent automated analysis.",
+      "Learn about CodeReverb, an AI-powered code review platform that helps development teams deliver higher quality code faster through intelligent automated analysis.",
   },
 };
 
 export default function AboutPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">About Code-Reverb</h1>
+      <h1 className="text-3xl font-bold mb-6">About CodeReverb</h1>
       <div className="prose prose-gray dark:prose-invert max-w-none">
         <p className="text-lg mb-6">
-          Code-Reverb is an AI-powered code review platform that helps
+          CodeReverb is an AI-powered code review platform that helps
           development teams deliver higher quality code faster.
         </p>
 
@@ -70,7 +70,7 @@ export default function AboutPage() {
 
         <h2>Our Technology</h2>
         <p>
-          Code-Reverb uses state-of-the-art machine learning models, including
+          CodeReverb uses state-of-the-art machine learning models, including
           Google's Gemini and OpenAI's GPT series, combined with specialized
           code analysis techniques. Our platform is built on modern web
           technologies and designed for scalability.
@@ -79,7 +79,7 @@ export default function AboutPage() {
         <h2>Contact Us</h2>
         <p>
           Have questions or feedback? We'd love to hear from you. Reach out to
-          us at hello@code-reverb.dev or visit our contact page.
+          us at hello@CodeReverb.dev or visit our contact page.
         </p>
       </div>
     </div>

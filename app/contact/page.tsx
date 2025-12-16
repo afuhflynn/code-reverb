@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Us - Code-Reverb",
+  title: "Contact Us - CodeReverb",
   description:
-    "Get in touch with the Code-Reverb team. Contact us for support, business inquiries, technical questions, or partnership opportunities.",
+    "Get in touch with the CodeReverb team. Contact us for support, business inquiries, technical questions, or partnership opportunities.",
   keywords: [
-    "contact Code-Reverb",
+    "contact CodeReverb",
     "support",
     "technical support",
     "business inquiries",
@@ -13,17 +13,17 @@ export const metadata: Metadata = {
     "customer service",
   ],
   openGraph: {
-    title: "Contact Us - Code-Reverb",
+    title: "Contact Us - CodeReverb",
     description:
-      "Get in touch with the Code-Reverb team. Contact us for support, business inquiries, technical questions, or partnership opportunities.",
+      "Get in touch with the CodeReverb team. Contact us for support, business inquiries, technical questions, or partnership opportunities.",
     type: "website",
     url: "/contact",
   },
   twitter: {
     card: "summary",
-    title: "Contact Us - Code-Reverb",
+    title: "Contact Us - CodeReverb",
     description:
-      "Get in touch with the Code-Reverb team. Contact us for support, business inquiries, technical questions, or partnership opportunities.",
+      "Get in touch with the CodeReverb team. Contact us for support, business inquiries, technical questions, or partnership opportunities.",
   },
 };
 
@@ -41,22 +41,22 @@ export default function ContactPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <h3>General Inquiries</h3>
-            <p>Email: hello@code-reverb.dev</p>
+            <p>Email: hello@CodeReverb.dev</p>
             <p>Response time: Within 24 hours</p>
           </div>
           <div>
             <h3>Technical Support</h3>
-            <p>Email: support@code-reverb.dev</p>
+            <p>Email: support@CodeReverb.dev</p>
             <p>Response time: Within 4 hours</p>
           </div>
           <div>
             <h3>Business & Partnerships</h3>
-            <p>Email: business@code-reverb.dev</p>
+            <p>Email: business@CodeReverb.dev</p>
             <p>Response time: Within 48 hours</p>
           </div>
           <div>
             <h3>Security & Privacy</h3>
-            <p>Email: security@code-reverb.dev</p>
+            <p>Email: security@CodeReverb.dev</p>
             <p>Response time: Within 12 hours</p>
           </div>
         </div>

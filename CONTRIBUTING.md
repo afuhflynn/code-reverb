@@ -1,13 +1,13 @@
-# Contributing to Code-Reverb
+# Contributing to CodeReverb
 
-Welcome! We're excited that you're interested in contributing to Code-Reverb, an AI-powered code review platform. This document provides guidelines and information to help you get started.
+Welcome! We're excited that you're interested in contributing to CodeReverb, an AI-powered code review platform. This document provides guidelines and information to help you get started.
 
 ## Ways to Contribute
 
-There are many ways to contribute to Code-Reverb:
+There are many ways to contribute to CodeReverb:
 
-- **🐛 Report Bugs**: Found a bug? [Open an issue](https://github.com/afuhflynn/code-reverb/issues/new?template=bug_report.md)
-- **💡 Suggest Features**: Have an idea? [Open a feature request](https://github.com/afuhflynn/code-reverb/issues/new?template=feature_request.md)
+- **🐛 Report Bugs**: Found a bug? [Open an issue](https://github.com/afuhflynn/CodeReverb/issues/new?template=bug_report.md)
+- **💡 Suggest Features**: Have an idea? [Open a feature request](https://github.com/afuhflynn/CodeReverb/issues/new?template=feature_request.md)
 - **📝 Improve Documentation**: Help make our docs better
 - **🔧 Write Code**: Fix bugs or add features
 - **🧪 Add Tests**: Improve our test coverage
@@ -29,8 +29,8 @@ Before you begin, ensure you have the following installed:
 1. **Fork and Clone the Repository**
 
    ```bash
-   git clone https://github.com/afuhflynn/code-reverb.git
-   cd code-reverb
+   git clone https://github.com/afuhflynn/CodeReverb.git
+   cd CodeReverb
    ```
 
 2. **Install Dependencies**
@@ -86,7 +86,7 @@ OPENAI_API_KEY=your_openai_key
 
 # Vector Database (Pinecone)
 PINECONE_API_KEY=your_pinecone_key
-PINECONE_INDEX_NAME=code-reverb
+PINECONE_INDEX_NAME=CodeReverb
 
 # Email (optional for development)
 SMTP_HOST=smtp.gmail.com
@@ -187,23 +187,28 @@ When creating a PR, use this template:
 
 ```markdown
 ## Description
+
 Brief description of the changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] Manual testing completed
 
 ## Screenshots (if applicable)
+
 Add screenshots of UI changes
 
 ## Checklist
+
 - [ ] Code follows project conventions
 - [ ] Tests pass locally
 - [ ] Documentation updated
@@ -236,15 +241,15 @@ pnpm test:coverage
 
 ```typescript
 // Component test example
-import { render, screen } from '@testing-library/react'
-import { Button } from '@/components/ui/button'
+import { render, screen } from "@testing-library/react";
+import { Button } from "@/components/ui/button";
 
-describe('Button', () => {
-  it('renders with correct text', () => {
-    render(<Button>Click me</Button>)
-    expect(screen.getByText('Click me')).toBeInTheDocument()
-  })
-})
+describe("Button", () => {
+  it("renders with correct text", () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText("Click me")).toBeInTheDocument();
+  });
+});
 ```
 
 ## Issue Reporting
@@ -281,7 +286,7 @@ We are committed to providing a welcoming and inclusive environment. Please:
 
 ## Getting Help
 
-- **Documentation**: Check our [docs](https://docs.code-reverb.dev)
+- **Documentation**: Check our [docs](https://docs.CodeReverb.dev)
 - **Issues**: Search existing issues first
 - **Discussions**: Use GitHub Discussions for questions
 - **Discord**: Join our community Discord
@@ -294,4 +299,4 @@ Contributors are recognized in:
 - Release notes
 - Our website's contributor page
 
-Thank you for contributing to Code-Reverb! 🚀
+Thank you for contributing to CodeReverb! 🚀

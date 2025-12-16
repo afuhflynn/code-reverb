@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - Code-Reverb",
+  title: "Terms of Service - CodeReverb",
   description:
-    "Read Code-Reverb's terms of service agreement. Understand the rules, user responsibilities, and legal terms for using our AI-powered code review platform.",
+    "Read CodeReverb's terms of service agreement. Understand the rules, user responsibilities, and legal terms for using our AI-powered code review platform.",
   keywords: [
     "terms of service",
     "terms and conditions",
     "user agreement",
     "legal terms",
-    "Code-Reverb terms",
+    "CodeReverb terms",
     "service agreement",
   ],
   openGraph: {
-    title: "Terms of Service - Code-Reverb",
+    title: "Terms of Service - CodeReverb",
     description:
-      "Read Code-Reverb's terms of service agreement. Understand the rules, user responsibilities, and legal terms for using our AI-powered code review platform.",
+      "Read CodeReverb's terms of service agreement. Understand the rules, user responsibilities, and legal terms for using our AI-powered code review platform.",
     type: "website",
     url: "/terms",
   },
   twitter: {
     card: "summary",
-    title: "Terms of Service - Code-Reverb",
+    title: "Terms of Service - CodeReverb",
     description:
-      "Read Code-Reverb's terms of service agreement. Understand the rules, user responsibilities, and legal terms for using our AI-powered code review platform.",
+      "Read CodeReverb's terms of service agreement. Understand the rules, user responsibilities, and legal terms for using our AI-powered code review platform.",
   },
   robots: {
     index: true,
@@ -42,20 +42,20 @@ export default function TermsPage() {
 
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing and using Code-Reverb, you accept and agree to be bound
-          by the terms and provision of this agreement.
+          By accessing and using CodeReverb, you accept and agree to be bound by
+          the terms and provision of this agreement.
         </p>
 
         <h2>2. Use License</h2>
         <p>
           Permission is granted to temporarily download one copy of the
-          materials on Code-Reverb's website for personal, non-commercial
+          materials on CodeReverb's website for personal, non-commercial
           transitory viewing only.
         </p>
 
         <h2>3. Service Description</h2>
         <p>
-          Code-Reverb provides AI-powered code review services for GitHub
+          CodeReverb provides AI-powered code review services for GitHub
           repositories. We analyze pull requests and provide automated feedback
           using machine learning models.
         </p>
@@ -70,7 +70,7 @@ export default function TermsPage() {
 
         <h2>5. Limitation of Liability</h2>
         <p>
-          In no event shall Code-Reverb or its suppliers be liable for any
+          In no event shall CodeReverb or its suppliers be liable for any
           damages arising out of the use or inability to use the materials on
           our platform.
         </p>
@@ -84,7 +84,7 @@ export default function TermsPage() {
         <h2>7. Governing Law</h2>
         <p>
           These terms shall be interpreted and governed by the laws of the
-          jurisdiction in which Code-Reverb operates.
+          jurisdiction in which CodeReverb operates.
         </p>
       </div>
     </div>

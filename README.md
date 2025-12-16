@@ -1,4 +1,4 @@
-# Code-Reverb
+# CodeReverb
 
 An AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
 
@@ -41,8 +41,8 @@ An AI-powered code review platform that integrates with GitHub to provide intell
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/afuhflynn/code-reverb.git
-   cd code-reverb
+   git clone https://github.com/afuhflynn/CodeReverb.git
+   cd CodeReverb
    ```
 
 2. **Install dependencies**
@@ -77,7 +77,7 @@ An AI-powered code review platform that integrates with GitHub to provide intell
    # Vector Database (Pinecone)
 
    PINECONE_API_KEY="your_pinecone_api_key"
-   PINECONE_INDEX_NAME="code-reverb"
+   PINECONE_INDEX_NAME="CodeReverb"
    PINECONE_ENVIRONMENT="your_pinecone_environment"
 
    # Email Service (SMTP)
@@ -160,7 +160,7 @@ pnpm start
 ## Project Structure
 
 ```txt
-code-reverb/
+CodeReverb/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
 │   ├── dashboard/         # Dashboard pages
@@ -208,6 +208,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Documentation**: [docs.code-reverb.dev](https://docs.code-reverb.dev)
-- **Issues**: [GitHub Issues](https://github.com/your-org/code-reverb/issues)
-- **Email**: [Code-Reverb Support](support@code-reverb.dev)
+- **Documentation**: [docs.CodeReverb.dev](https://docs.CodeReverb.dev)
+- **Issues**: [GitHub Issues](https://github.com/your-org/CodeReverb/issues)
+- **Email**: [CodeReverb Support](support@CodeReverb.dev)

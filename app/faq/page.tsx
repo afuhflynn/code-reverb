@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions - Code-Reverb",
+  title: "Frequently Asked Questions - CodeReverb",
   description:
-    "Find answers to common questions about Code-Reverb's AI-powered code review platform. Learn how it works, pricing, security, and supported languages.",
+    "Find answers to common questions about CodeReverb's AI-powered code review platform. Learn how it works, pricing, security, and supported languages.",
   keywords: [
     "FAQ",
     "frequently asked questions",
-    "Code-Reverb help",
+    "CodeReverb help",
     "code review questions",
     "AI code analysis FAQ",
     "GitHub integration questions",
@@ -15,17 +15,17 @@ export const metadata: Metadata = {
     "security FAQ",
   ],
   openGraph: {
-    title: "Frequently Asked Questions - Code-Reverb",
+    title: "Frequently Asked Questions - CodeReverb",
     description:
-      "Find answers to common questions about Code-Reverb's AI-powered code review platform. Learn how it works, pricing, security, and supported languages.",
+      "Find answers to common questions about CodeReverb's AI-powered code review platform. Learn how it works, pricing, security, and supported languages.",
     type: "website",
     url: "/faq",
   },
   twitter: {
     card: "summary",
-    title: "Frequently Asked Questions - Code-Reverb",
+    title: "Frequently Asked Questions - CodeReverb",
     description:
-      "Find answers to common questions about Code-Reverb's AI-powered code review platform. Learn how it works, pricing, security, and supported languages.",
+      "Find answers to common questions about CodeReverb's AI-powered code review platform. Learn how it works, pricing, security, and supported languages.",
   },
 };
 
@@ -36,9 +36,9 @@ export default function FAQPage() {
       <div className="prose prose-gray dark:prose-invert max-w-none">
         <div className="space-y-6">
           <div>
-            <h2>What is Code-Reverb?</h2>
+            <h2>What is CodeReverb?</h2>
             <p>
-              Code-Reverb is an AI-powered code review platform that
+              CodeReverb is an AI-powered code review platform that
               automatically analyzes pull requests on GitHub, providing
               intelligent feedback and suggestions to improve code quality.
             </p>
@@ -47,7 +47,7 @@ export default function FAQPage() {
           <div>
             <h2>How does it work?</h2>
             <p>
-              When you connect a GitHub repository, Code-Reverb monitors pull
+              When you connect a GitHub repository, CodeReverb monitors pull
               requests and uses AI models to analyze code changes. It provides
               inline comments directly on GitHub with suggestions for
               improvements, bug fixes, and best practices.
@@ -57,7 +57,7 @@ export default function FAQPage() {
           <div>
             <h2>What programming languages does it support?</h2>
             <p>
-              Code-Reverb supports all major programming languages including
+              CodeReverb supports all major programming languages including
               JavaScript, TypeScript, Python, Java, C++, Go, Rust, and many
               others. Our AI models are trained on diverse codebases.
             </p>
@@ -94,7 +94,7 @@ export default function FAQPage() {
           <div>
             <h2>Can I integrate it with my existing workflow?</h2>
             <p>
-              Yes! Code-Reverb integrates seamlessly with GitHub. You can
+              Yes! CodeReverb integrates seamlessly with GitHub. You can
               configure it to run on specific branches, set up custom rules, and
               integrate with your CI/CD pipelines.
             </p>
