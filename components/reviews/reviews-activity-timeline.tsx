@@ -9,8 +9,10 @@ import {
   Star,
   MessageSquare,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useReviewsActivity } from "@/hooks";
 
 const activityFeed = [
   {
@@ -97,52 +99,68 @@ const getActivityTypeColor = (type: string) => {
 };
 
 export function ReviewsActivityTimeline() {
+  const { data: activities, isLoading } = useReviewsActivity();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Recent Review Activity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {activityFeed.map((activity, index) => (
-            <div key={activity.id} className="flex items-start space-x-4">
-              {/* Timeline line */}
-              <div className="flex flex-col items-center">
-                <div
-                  className={`p-2 rounded-full ${getActivityTypeColor(activity.type)}`}
-                >
-                  <activity.icon className={`h-4 w-4 ${activity.iconColor}`} />
-                </div>
-                {index < activityFeed.length - 1 && (
-                  <div className="w-px h-8 bg-border mt-2" />
-                )}
+        {isLoading ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activities?.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                No recent activity found.
               </div>
+            ) : (
+              activities?.map((activity, index) => (
+                <div key={activity.id} className="flex items-start space-x-4">
+                  {/* Timeline line */}
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`p-2 rounded-full ${getActivityTypeColor(activity.type)}`}
+                    >
+                      <CheckCircle
+                        className={`h-4 w-4 ${activity.iconColor || "text-green-600"}`}
+                      />
+                    </div>
+                    {index < (activities?.length || 0) - 1 && (
+                      <div className="w-px h-8 bg-border mt-2" />
+                    )}
+                  </div>
 
-              {/* Activity content */}
-              <div className="flex-1 space-y-1 pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium leading-tight">
-                      {activity.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">
-                      {activity.description}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{activity.user}</span>
-                      <span>•</span>
-                      <span>
-                        {formatDistanceToNow(activity.timestamp, {
-                          addSuffix: true,
-                        })}
-                      </span>
+                  {/* Activity content */}
+                  <div className="flex-1 space-y-1 pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-medium leading-tight">
+                          {activity.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.description}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{activity.user}</span>
+                          <span>•</span>
+                          <span>
+                            {formatDistanceToNow(new Date(activity.timestamp), {
+                              addSuffix: true,
+                            })}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              ))
+            )}
+          </div>
+        )}
 
         <div className="pt-4 border-t mt-6">
           <div className="flex items-center justify-between">

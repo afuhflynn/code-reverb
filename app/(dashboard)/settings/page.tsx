@@ -1,9 +1,12 @@
-import { requireAuth } from "@/lib/auth-utils";
+"use client";
+
+import { useState } from "react";
 import { SettingsSidebar } from "@/components/settings/settings-sidebar";
 import { SettingsContent } from "@/components/settings/settings-content";
 
-export default async function SettingsPage() {
-  const session = await requireAuth("/settings");
+export default function SettingsPage() {
+  const [activeSection, setActiveSection] = useState("profile");
+  const [hasChanges, setHasChanges] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -18,12 +21,19 @@ export default async function SettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Settings Navigation Sidebar */}
           <div className="lg:col-span-1">
-            <SettingsSidebar />
+            <SettingsSidebar
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+            />
           </div>
 
           {/* Main Content Area */}
           <div className="lg:col-span-3">
-            <SettingsContent />
+            <SettingsContent
+              activeSection={activeSection}
+              hasChanges={hasChanges}
+              setHasChanges={setHasChanges}
+            />
           </div>
         </div>
       </div>

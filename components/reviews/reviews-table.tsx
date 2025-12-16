@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   CheckCircle,
   Clock,
@@ -12,8 +12,10 @@ import {
   ExternalLink,
   RotateCcw,
   Star,
+  Loader2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useReviews, useRetryReview } from "@/hooks";
 
 const mockReviews = [
   {
@@ -117,7 +119,17 @@ const getQualityColor = (score: number | null) => {
   return "bg-red-100 text-red-800";
 };
 
-export function ReviewsTable() {
+export function ReviewsTable({
+  filters,
+  onPageChange,
+}: {
+  filters?: any;
+  onPageChange?: (page: number) => void;
+}) {
+  const { data: reviewsData, isLoading } = useReviews(filters);
+  const retryReview = useRetryReview();
+
+  const { reviews = [], pagination } = reviewsData || {};
   return (
     <Card>
       <CardHeader>
@@ -142,105 +154,168 @@ export function ReviewsTable() {
               </tr>
             </thead>
             <tbody>
-              {mockReviews.map((review) => (
-                <tr key={review.id} className="border-b hover:bg-muted/50">
-                  <td className="p-2">
-                    <Checkbox checked={review.isSelected} />
-                  </td>
-                  <td className="p-2">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">
-                          {review.repository.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{review.repository}</span>
-                    </div>
-                  </td>
-                  <td className="p-2">
-                    <span className="font-mono text-sm">
-                      #{review.prNumber}
-                    </span>
-                  </td>
-                  <td className="p-2 max-w-xs">
-                    <div className="truncate" title={review.title}>
-                      {review.title}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      by {review.author} •{" "}
-                      {formatDistanceToNow(review.createdAt, {
-                        addSuffix: true,
-                      })}
-                    </div>
-                  </td>
-                  <td className="p-2">
-                    <Badge
-                      variant="outline"
-                      className={getStatusColor(review.status)}
-                    >
-                      {getStatusIcon(review.status)}
-                      <span className="ml-1 capitalize">
-                        {review.status.replace("-", " ")}
-                      </span>
-                    </Badge>
-                  </td>
-                  <td className="p-2">
-                    {review.qualityScore ? (
-                      <Badge
-                        variant="outline"
-                        className={getQualityColor(review.qualityScore)}
-                      >
-                        {review.qualityScore}/10
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </td>
-                  <td className="p-2">
-                    <span className="text-sm">{review.persona}</span>
-                  </td>
-                  <td className="p-2">
-                    <span className="text-sm">{review.duration}</span>
-                  </td>
-                  <td className="p-2">
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
-                        <Eye className="h-3 w-3" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                      {review.status === "failed" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                        >
-                          <RotateCcw className="h-3 w-3" />
-                        </Button>
-                      )}
-                      {review.status === "in-progress" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                        >
-                          <Play className="h-3 w-3" />
-                        </Button>
-                      )}
-                      {review.status === "completed" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                        >
-                          <Star className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((x, i) => (
+                  <tr key={`${i}-${x}`} className="border-b">
+                    <td className="p-2">
+                      <div className="h-4 bg-muted rounded animate-pulse" />
+                    </td>
+                    <td className="p-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-20" />
+                    </td>
+                    <td className="p-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-12" />
+                    </td>
+                    <td className="p-2">
+                      <div className="space-y-1">
+                        <div className="h-4 bg-muted rounded animate-pulse" />
+                        <div className="h-3 bg-muted rounded animate-pulse w-32" />
+                      </div>
+                    </td>
+                    <td className="p-2">
+                      <div className="h-6 bg-muted rounded animate-pulse w-16" />
+                    </td>
+                    <td className="p-2">
+                      <div className="h-6 bg-muted rounded animate-pulse w-12" />
+                    </td>
+                    <td className="p-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-16" />
+                    </td>
+                    <td className="p-2">
+                      <div className="h-4 bg-muted rounded animate-pulse w-12" />
+                    </td>
+                    <td className="p-2">
+                      <div className="flex gap-1">
+                        <div className="h-7 w-7 bg-muted rounded animate-pulse" />
+                        <div className="h-7 w-7 bg-muted rounded animate-pulse" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : reviews.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={9}
+                    className="p-8 text-center text-muted-foreground"
+                  >
+                    No reviews found matching your criteria.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                reviews.map((review) => (
+                  <tr key={review.id} className="border-b hover:bg-muted/50">
+                    <td className="p-2">
+                      <Checkbox />
+                    </td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {review.repository.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{review.repository}</span>
+                      </div>
+                    </td>
+                    <td className="p-2">
+                      <span className="font-mono text-sm">
+                        #{review.prNumber}
+                      </span>
+                    </td>
+                    <td className="p-2 max-w-xs">
+                      <div className="truncate" title={review.title}>
+                        {review.title}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        by {review.author} •{" "}
+                        {formatDistanceToNow(new Date(review.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </div>
+                    </td>
+                    <td className="p-2">
+                      <Badge
+                        variant="outline"
+                        className={getStatusColor(review.status)}
+                      >
+                        {getStatusIcon(review.status)}
+                        <span className="ml-1 capitalize">
+                          {review.status.replace("-", " ")}
+                        </span>
+                      </Badge>
+                    </td>
+                    <td className="p-2">
+                      {review.qualityScore ? (
+                        <Badge
+                          variant="outline"
+                          className={getQualityColor(review.qualityScore)}
+                        >
+                          {review.qualityScore}/10
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      <span className="text-sm">{review.persona}</span>
+                    </td>
+                    <td className="p-2">
+                      <span className="text-sm">{review.duration}</span>
+                    </td>
+                    <td className="p-2">
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                        {review.status === "failed" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={() => retryReview.mutate(review.id)}
+                            disabled={retryReview.isPending}
+                          >
+                            {retryReview.isPending ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <RotateCcw className="h-3 w-3" />
+                            )}
+                          </Button>
+                        )}
+                        {review.status === "in-progress" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                          >
+                            <Play className="h-3 w-3" />
+                          </Button>
+                        )}
+                        {review.status === "completed" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                          >
+                            <Star className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
