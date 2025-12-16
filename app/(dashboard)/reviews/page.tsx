@@ -1,12 +1,15 @@
-import { requireAuth } from "@/lib/auth-utils";
+"use client";
+
+import { useState } from "react";
 import { ReviewsHeader } from "@/components/reviews/reviews-header";
 import { ReviewsFilters } from "@/components/reviews/reviews-filters";
 import { ReviewsTable } from "@/components/reviews/reviews-table";
 import { ReviewsAnalyticsTabs } from "@/components/reviews/reviews-analytics-tabs";
 import { ReviewsActivityTimeline } from "@/components/reviews/reviews-activity-timeline";
 
-export default async function ReviewsPage() {
-  const session = await requireAuth("/reviews");
+export default function ReviewsPage() {
+  const [filters, setFilters] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
 
   return (
     <div className="min-h-screen bg-background">
@@ -15,10 +18,18 @@ export default async function ReviewsPage() {
         <ReviewsHeader />
 
         {/* Advanced filters and search */}
-        <ReviewsFilters />
+        <ReviewsFilters
+          onFiltersChange={(newFilters) => {
+            setFilters(newFilters);
+            setCurrentPage(1); // Reset to first page when filters change
+          }}
+        />
 
         {/* Main reviews table */}
-        <ReviewsTable />
+        <ReviewsTable
+          filters={{ ...filters, page: currentPage }}
+          onPageChange={setCurrentPage}
+        />
 
         {/* Analytics tabs */}
         <ReviewsAnalyticsTabs />

@@ -86,19 +86,34 @@ const settingsSections = [
   },
 ];
 
-export function SettingsSidebar() {
-  const [activeSection, setActiveSection] = useState("profile");
+interface SettingsSidebarProps {
+  activeSection: string;
+  setActiveSection: (section: string) => void;
+}
 
-  const personalSections = settingsSections.filter(
+export function SettingsSidebar({
+  activeSection,
+  setActiveSection,
+}: SettingsSidebarProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter sections based on search term
+  const filteredSections = settingsSections.filter(
+    (section) =>
+      section.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      section.description.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const personalSections = filteredSections.filter(
     (s) => s.category === "personal",
   );
-  const platformSections = settingsSections.filter(
+  const platformSections = filteredSections.filter(
     (s) => s.category === "platform",
   );
-  const orgSections = settingsSections.filter(
+  const orgSections = filteredSections.filter(
     (s) => s.category === "organization",
   );
-  const billingSections = settingsSections.filter(
+  const billingSections = filteredSections.filter(
     (s) => s.category === "billing",
   );
 
@@ -112,6 +127,8 @@ export function SettingsSidebar() {
             <input
               type="text"
               placeholder="Search settings..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm border rounded-md bg-background"
             />
           </div>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +11,25 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, X, Calendar } from "lucide-react";
 
-export function ReviewsFilters() {
+export function ReviewsFilters({
+  onFiltersChange,
+}: {
+  onFiltersChange: (filters: any) => void;
+}) {
+  const [filters, setFilters] = useState({
+    status: "all",
+    repository: "all",
+    persona: "all",
+    dateRange: "month",
+    qualityScore: "all",
+    search: "",
+  });
+
+  const handleFilterChange = (key: string, value: string) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    onFiltersChange(newFilters);
+  };
   return (
     <div className="bg-muted/50 rounded-lg p-4 space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -20,12 +39,17 @@ export function ReviewsFilters() {
           <Input
             placeholder="Search reviews, PRs, repositories..."
             className="pl-9"
+            value={filters.search}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
           />
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-2">
-          <Select>
+          <Select
+            value={filters.status}
+            onValueChange={(value) => handleFilterChange("status", value)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -38,7 +62,10 @@ export function ReviewsFilters() {
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select
+            value={filters.repository}
+            onValueChange={(value) => handleFilterChange("repository", value)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Repository" />
             </SelectTrigger>
@@ -52,7 +79,10 @@ export function ReviewsFilters() {
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select
+            value={filters.persona}
+            onValueChange={(value) => handleFilterChange("persona", value)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="AI Persona" />
             </SelectTrigger>
@@ -65,7 +95,10 @@ export function ReviewsFilters() {
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select
+            value={filters.dateRange}
+            onValueChange={(value) => handleFilterChange("dateRange", value)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Date Range" />
             </SelectTrigger>
@@ -78,7 +111,10 @@ export function ReviewsFilters() {
             </SelectContent>
           </Select>
 
-          <Select>
+          <Select
+            value={filters.qualityScore}
+            onValueChange={(value) => handleFilterChange("qualityScore", value)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Quality Score" />
             </SelectTrigger>

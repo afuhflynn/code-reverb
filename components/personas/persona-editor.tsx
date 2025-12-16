@@ -16,15 +16,52 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Edit, Play, BarChart3, History, Download } from "lucide-react";
 
-export function PersonaEditor() {
+interface PersonaWithStats {
+  id: string;
+  name: string;
+  description: string;
+  specialty: string;
+  avatar: string;
+  reviewCount: number;
+  avgQuality: number;
+  lastUsed: Date;
+  isActive: boolean;
+  isDefault: boolean;
+  tags: string[];
+}
+
+interface PersonaEditorProps {
+  selectedPersona: PersonaWithStats | null;
+}
+
+export function PersonaEditor({ selectedPersona }: PersonaEditorProps) {
   const [activeTab, setActiveTab] = useState("edit");
+
+  if (!selectedPersona) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <Edit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">Select a Persona</h3>
+          <p className="text-muted-foreground">
+            Choose a persona from the sidebar to view and edit its details.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Edit className="h-5 w-5" />
-          Persona Editor
+          {selectedPersona.name}
+          {selectedPersona.isDefault && (
+            <Badge variant="outline" className="ml-2">
+              Default
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -43,13 +80,15 @@ export function PersonaEditor() {
                 <div>
                   <label className="text-sm font-medium">Name</label>
                   <Input
+                    value={selectedPersona.name}
                     placeholder="e.g., Code Quality Expert"
                     className="mt-1"
+                    readOnly={selectedPersona.isDefault}
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Specialty</label>
-                  <Select>
+                  <Select defaultValue={selectedPersona.specialty}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Select specialty" />
                     </SelectTrigger>
@@ -71,20 +110,26 @@ export function PersonaEditor() {
                 <div>
                   <label className="text-sm font-medium">Description</label>
                   <Textarea
+                    value={selectedPersona.description}
                     placeholder="Describe what this persona specializes in..."
                     className="mt-1 min-h-20"
+                    readOnly={selectedPersona.isDefault}
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Tags</label>
                   <Input
+                    value={selectedPersona.tags.join(", ")}
                     placeholder="e.g., react, typescript, hooks"
                     className="mt-1"
+                    readOnly={selectedPersona.isDefault}
                   />
-                  <div className="flex gap-1 mt-2">
-                    <Badge variant="secondary">react</Badge>
-                    <Badge variant="secondary">typescript</Badge>
-                    <Badge variant="secondary">hooks</Badge>
+                  <div className="flex gap-1 mt-2 flex-wrap">
+                    {selectedPersona.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </div>

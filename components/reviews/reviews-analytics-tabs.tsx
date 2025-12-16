@@ -2,9 +2,12 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, TrendingUp, Brain, Target } from "lucide-react";
+import { BarChart3, TrendingUp, Brain, Target, Loader2 } from "lucide-react";
+import { useReviewsAnalytics } from "@/hooks";
 
 export function ReviewsAnalyticsTabs() {
+  const { data: analytics, isLoading } = useReviewsAnalytics("performance");
+
   return (
     <Tabs defaultValue="performance" className="space-y-6">
       <TabsList className="grid w-full grid-cols-4">
@@ -27,85 +30,88 @@ export function ReviewsAnalyticsTabs() {
       </TabsList>
 
       <TabsContent value="performance" className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Success Rate by Repository</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">web-app</span>
-                  <span className="text-sm font-medium">96.2%</span>
+        {isLoading ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Success Rate by Repository</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analytics?.successRateByRepo?.map((repo) => (
+                    <div
+                      key={repo.repository}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-sm">{repo.repository}</span>
+                      <span className="text-sm font-medium">
+                        {repo.successRate}%
+                      </span>
+                    </div>
+                  )) || (
+                    <div className="text-center text-muted-foreground py-4">
+                      No data available
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">api-service</span>
-                  <span className="text-sm font-medium">94.1%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">mobile-app</span>
-                  <span className="text-sm font-medium">92.8%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">docs</span>
-                  <span className="text-sm font-medium">98.5%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Average Review Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Code Quality</span>
-                  <span className="text-sm font-medium">2.8 min</span>
+            <Card>
+              <CardHeader>
+                <CardTitle>Average Review Time</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analytics?.avgTimeByPersona?.map((persona) => (
+                    <div
+                      key={persona.persona}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-sm">{persona.persona}</span>
+                      <span className="text-sm font-medium">
+                        {persona.avgTime}s
+                      </span>
+                    </div>
+                  )) || (
+                    <div className="text-center text-muted-foreground py-4">
+                      No data available
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Security Expert</span>
-                  <span className="text-sm font-medium">3.2 min</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Performance</span>
-                  <span className="text-sm font-medium">2.1 min</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Balanced</span>
-                  <span className="text-sm font-medium">2.5 min</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Quality Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">9-10 (Excellent)</span>
-                  <span className="text-sm font-medium">42%</span>
+            <Card>
+              <CardHeader>
+                <CardTitle>Quality Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analytics?.qualityDistribution?.map((range) => (
+                    <div
+                      key={range.range}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-sm">{range.range}</span>
+                      <span className="text-sm font-medium">
+                        {range.percentage}%
+                      </span>
+                    </div>
+                  )) || (
+                    <div className="text-center text-muted-foreground py-4">
+                      No data available
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">7-8.9 (Good)</span>
-                  <span className="text-sm font-medium">35%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">5-6.9 (Fair)</span>
-                  <span className="text-sm font-medium">18%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">0-4.9 (Poor)</span>
-                  <span className="text-sm font-medium">5%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="insights" className="space-y-6">
