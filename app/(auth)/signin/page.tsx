@@ -11,22 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function SignUpPage() {
+export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl">Create your account</CardTitle>
-          <CardDescription>
-            Join the AI revolution. No cape required.
-          </CardDescription>
+          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardDescription>Your AI missed you. Probably.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Ada Lovelace" />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="you@ai-startup.com" />
@@ -35,7 +29,7 @@ export default function SignUpPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" />
             </div>
-            <Button className="w-full">Sign up</Button>
+            <Button className="w-full">Sign in</Button>
           </form>
         </CardContent>
       </Card>
