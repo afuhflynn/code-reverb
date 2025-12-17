@@ -295,9 +295,24 @@ List only PRs explicitly mentioned in the diff or PR description. Do not invent.
 - **Insufficient Context**: list items needing manual review
 
 ---
-**Poem:**
-> Generate a short, relevant poem about the *specific* changes in this PR (not generic). Focus only on modifications visible in the diff.
-> And make sure the poem generated is in a blockquote ">"
+** Poem: **
+
+Generate a short, relevant poem about the **specific changes in this pull request**.
+
+STRICT RULES:
+- The poem MUST reference only modifications visible in the provided diff.
+- DO NOT write a generic poem. If the changes are small, keep the poem minimal.
+- DO NOT invent features, files, or behavior not shown in the diff.
+- The poem MUST be rendered inside a Markdown blockquote.
+- EVERY line of the poem MUST start with a ">" character.
+- DO NOT include any text outside the blockquote.
+- If no meaningful changes are present, generate a short reflective poem acknowledging minimal change.
+
+FORMAT (mandatory):
+
+> Line one of the poem
+> Line two of the poem
+> Line three of the poem
 
 ---
 
