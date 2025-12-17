@@ -44,6 +44,7 @@ export async function indexCodebase(
     for (let i = 0; i < vectors.length; i += batchSize) {
       const batch = vectors.slice(i, i + batchSize);
 
+      console.log({ batch });
       await pineconeIndex.upsert(batch);
     }
   }
@@ -59,7 +60,7 @@ export async function retrieveContext(
   const embedding = await generateEmbedding(query);
   const results = await pineconeIndex.query({
     vector: embedding,
-    filter: [repoId],
+    filter: { repoId },
     topK,
   });
 
