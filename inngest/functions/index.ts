@@ -295,8 +295,9 @@ List only PRs explicitly mentioned in the diff or PR description. Do not invent.
 - **Insufficient Context**: list items needing manual review
 
 ---
-**Poem** (optional):
-> If the PR author requested a lighter tone, generate a short, relevant poem about the changes in this specific PR. Otherwise, omit this section entirely.
+**Poem:**
+> Generate a short, relevant poem about the *specific* changes in this PR (not generic). Focus only on modifications visible in the diff.
+> And make sure the poem generated is in a blockquote ">"
 
 ---
 
