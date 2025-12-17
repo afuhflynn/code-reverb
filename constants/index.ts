@@ -23,3 +23,10 @@ export const months = [
   "Nov",
   "Dec",
 ];
+
+export const navItems = [
+  { href: "#features", label: "Features" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
+  { href: "/faqs", label: "FAQs" },
+];

@@ -12,6 +12,7 @@ const publicPaths = [
   "/terms",
   "/api/auth",
   "/api/webhooks/github",
+  "/pricing",
 ];
 const authPaths = ["/auth"];
 
