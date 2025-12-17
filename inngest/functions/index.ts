@@ -295,8 +295,8 @@ List only PRs explicitly mentioned in the diff or PR description. Do not invent.
 - **Insufficient Context**: list items needing manual review
 
 ---
-**Poem** (optional):
-> If the PR author requested a lighter tone, generate a short, relevant poem about the changes in this specific PR. Otherwise, omit this section entirely.
+**Poem:**
+> Generate a short, relevant poem about the changes in this specific PR.
 
 ---
 
@@ -304,6 +304,8 @@ List only PRs explicitly mentioned in the diff or PR description. Do not invent.
 - **Do not** reference files not in the diff.
 - **Do not** invent line numbers. If you do, mark them LOW CONFIDENCE and explain why.
 - Keep emoji usage minimal and professional (see emoji policy below).
+
+NOTE: Make sure you generate a poem about the relevant changes in the specific PR.
 
 ---
 
