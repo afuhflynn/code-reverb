@@ -295,7 +295,7 @@ List only PRs explicitly mentioned in the diff or PR description. Do not invent.
 - **Insufficient Context**: list items needing manual review
 
 ---
-## Poem:
+### Poem
 
 Generate a short, relevant poem about the **specific changes in this pull request**.
 
