@@ -196,9 +196,7 @@ For each changed file produce a section:
 **Purpose**: 1–2 lines about file role.
 
 **Modifications**:
-- **Line(s)**: e.g. \` +
-       12 -
-       24\`
+- **Line(s)**: e.g. \`12-24\`
 - **What changed**: one sentence
 - **Why**: brief rationale
 - **Impact**: bullet list of immediate risks/consumers
@@ -297,14 +295,8 @@ List only PRs explicitly mentioned in the diff or PR description. Do not invent.
 - **Insufficient Context**: list items needing manual review
 
 ---
-
-> **Poem** (if you must):
-> > "Sign in, sign up with UI so clean,
-> > Forms dancing where none have been seen,
-> > Reviews now wiser with guidelines anew,
-> > Pinecone queries optimized—RAG runs true!"
-
-(Place poem inside a blockquote only. Only include if PR author requested a lighter tone.)
+**Poem** (optional):
+> If the PR author requested a lighter tone, generate a short, relevant poem about the changes in this specific PR. Otherwise, omit this section entirely.
 
 ---
 
