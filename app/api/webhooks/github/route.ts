@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { inngest } from "@/lib/inngest";
+import { reviewPullRequest } from "@/lib/ai/actions";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +10,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Pong" });
     }
 
-    // TODO: Handle later
+    if (event === "pull_request") {
+      const {
+        action,
+        repository: { full_name: repo },
+        number: prNumber,
+      } = body;
+
+      const [owner, repoName] = repo?.split("/");
+
+      if (action === "opened" || action === "synchronized") {
+        reviewPullRequest(owner, repoName, prNumber)
+          .then(() => console.log(`Review completed for: ${repo} #${prNumber}`))
+          .catch((error) =>
+            console.error(`Review failed for: ${repo} #${prNumber}: `, error)
+          );
+      }
+    }
     return NextResponse.json({ message: "Event processed" });
   } catch (error) {
     console.error("Webhook error:", error);

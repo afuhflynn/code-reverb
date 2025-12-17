@@ -3,189 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { aiOrchestrator } from "@/lib/ai/orchestrator";
 import { Octokit } from "@octokit/rest";
 import { getRepoFileContents } from "@/lib/github-utils";
-import { indexCodebase } from "@/lib/ai/lib/rag";
-
-// PR Analysis Worker
-export const prAnalyze = inngest.createFunction(
-  { id: "pr-analyze" },
-  { event: "pr.analyze" },
-  async ({ event, step }) => {
-    const { prId, repoId, githubPR } = event.data;
-
-    // Get PR and repo details
-    const pr = await step.run("get-pr", async () => {
-      return await (prisma as any).pr.findUnique({
-        where: { id: prId },
-        include: { repo: true, author: true },
-      });
-    });
-
-    if (!pr) {
-      throw new Error(`PR ${prId} not found`);
-    }
-
-    // Get persona (default to first one or create default)
-    const persona = await step.run("get-persona", async () => {
-      const defaultPersona = await (prisma as any).persona.findFirst({
-        where: { userId: pr.repo.ownerId },
-      });
-
-      if (!defaultPersona) {
-        // Create default persona
-        return await (prisma as any).persona.create({
-          data: {
-            name: "Balanced Reviewer",
-            description:
-              "A balanced code reviewer that provides constructive feedback",
-            prompt:
-              "You are a balanced code reviewer. Provide constructive feedback that helps improve code quality while being encouraging.",
-            userId: pr.repo.ownerId,
-          },
-        });
-      }
-
-      return defaultPersona;
-    });
-
-    // Create run record
-    const run = await step.run("create-run", async () => {
-      return await (prisma as any).run.create({
-        data: {
-          prId: pr.id,
-          personaId: persona.id,
-          status: "running",
-        },
-      });
-    });
-
-    try {
-      // Clone and analyze repository
-      const analysis = await step.run("analyze-code", async () => {
-        // This would clone the repo and analyze the diff
-        // For now, return mock analysis
-        const mockCode = `
-function calculateTotal(items) {
-  let total = 0;
-  for (let item of items) {
-    total += item.price * item.quantity;
-  }
-  return total;
-}
-        `;
-
-        return await aiOrchestrator.generateReview({
-          code: mockCode,
-          language: "javascript",
-          persona,
-          prTitle: pr.title,
-          prDescription: pr.description,
-        });
-      });
-
-      // Store comments
-      await step.run("store-comments", async () => {
-        for (const comment of analysis.comments) {
-          await (prisma as any).comment.create({
-            data: {
-              runId: run.id,
-              filePath: comment.filePath,
-              line: comment.line,
-              content: comment.content,
-            },
-          });
-        }
-      });
-
-      // Post comments to GitHub
-      await step.run("post-github-comments", async () => {
-        const octokit = new Octokit({
-          auth: process.env.GITHUB_TOKEN, // Would need to be configured per user
-        });
-
-        for (const comment of analysis.comments) {
-          try {
-            await octokit.pulls.createReviewComment({
-              owner: pr.repo.fullName.split("/")[0],
-              repo: pr.repo.fullName.split("/")[1],
-              pull_number: pr.number,
-              body: comment.content,
-              path: comment.filePath,
-              line: comment.line,
-              commit_id: githubPR.head.sha,
-            });
-          } catch (error) {
-            console.warn("Failed to post comment to GitHub:", error);
-          }
-        }
-      });
-
-      // Store review context in vector DB
-      await step.run("store-context", async () => {
-        await aiOrchestrator.storeReviewContext(
-          "mock code content", // Would be actual diff
-          "javascript", // Would detect language
-          analysis,
-          persona.id
-        );
-      });
-
-      // Update run status
-      await step.run("update-run", async () => {
-        await (prisma as any).run.update({
-          where: { id: run.id },
-          data: { status: "completed" },
-        });
-      });
-
-      // Send notification
-      await step.run("send-notification", async () => {
-        // Email notification would be sent here
-        console.log(`Review completed for PR ${pr.number}`);
-      });
-
-      return { success: true, runId: run.id };
-    } catch (error) {
-      // Update run status on failure
-      await step.run("update-run-failed", async () => {
-        await (prisma as any).run.update({
-          where: { id: run.id },
-          data: { status: "failed" },
-        });
-      });
-
-      throw error;
-    }
-  }
-);
-
-// Repository Cloning Worker
-export const repoClone = inngest.createFunction(
-  { id: "repo-clone" },
-  { event: "repo.clone" },
-  async ({ event, step }) => {
-    const { repoId } = event.data;
-
-    const repo = await step.run("get-repo", async () => {
-      return await (prisma as any).repo.findUnique({
-        where: { id: repoId },
-      });
-    });
-
-    if (!repo) {
-      throw new Error(`Repository ${repoId} not found`);
-    }
-
-    // Clone repository logic would go here
-    // This is a placeholder for the actual cloning implementation
-    await step.run("clone-repo", async () => {
-      // Use git clone or similar
-      console.log(`Cloning repository: ${repo.fullName}`);
-      // Actual cloning logic...
-    });
-
-    return { success: true, repoId };
-  }
-);
+import { indexCodebase, retrieveContext } from "@/lib/ai/lib/rag";
+import {
+  getPullRequestDiff,
+  postReviewComment,
+} from "@/lib/github-utils/actions";
+import { generateText } from "ai";
+import { google } from "@ai-sdk/google";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -270,5 +94,107 @@ export const indexRepo = inngest.createFunction(
     });
 
     return { success: true, indexedFiles: files.length };
+  }
+);
+
+// Ai code review Worker
+
+export const generateReview = inngest.createFunction(
+  { id: "generate-review", concurrency: 5 },
+  { event: "pr.review.requested" },
+
+  async ({ event, step }) => {
+    const { owner, repo, prNumber, userId } = event.data;
+
+    const { diff, title, description, token } = await step.run(
+      "fetch-pr-data",
+      async () => {
+        const account = await prisma.account.findFirst({
+          where: {
+            userId: userId,
+            providerId: "github",
+          },
+        });
+
+        if (!account?.accessToken) {
+          throw new Error("No GitHub access token found");
+        }
+
+        const data = await getPullRequestDiff(
+          account.accessToken,
+          owner,
+          repo,
+          prNumber
+        );
+        return { ...data, token: account.accessToken };
+      }
+    );
+
+    const context = await step.run("retrieve-context", async () => {
+      const query = `${title}\n${description}`;
+
+      return await retrieveContext(query, `${owner}/${repo}`);
+    });
+
+    const review = await step.run("generate-ai-review", async () => {
+      const prompt = `You are an expert code reviewer. Analyze the following pull request and provide a detailed, constructive code review.
+
+PR Title: ${title}
+PR Description: ${description || "No description provided"}
+
+Context from Codebase:
+${context.join("\n\n")}
+
+Code Changes:
+\`\`\`diff
+${diff}
+\`\`\`
+
+Please provide:
+1. **Walkthrough**: A file-by-file explanation of the changes.
+2. **Sequence Diagram**: A Mermaid JS sequence diagram visualizing the flow of the changes (if applicable). Use \`\`\`mermaid ... \`\`\` block. **IMPORTANT**: Ensure the Mermaid syntax is valid. Do not use special characters (like quotes, braces, parentheses) inside Note text or labels as it breaks rendering. Keep the diagram simple.
+3. **Summary**: Brief overview.
+4. **Strengths**: What's done well.
+5. **Issues**: Bugs, security concerns, code smells.
+6. **Suggestions**: Specific code improvements.
+7. **Poem**: A short, creative poem summarizing the changes at the very end.
+
+Format your response in markdown.`;
+
+      const { text } = await generateText({
+        model: google("gemini-2.5-flash"),
+        prompt,
+      });
+
+      return text;
+    });
+
+    await step.run("post-comment", async () => {
+      await postReviewComment(token, owner, repo, prNumber, review);
+    });
+
+    await step.run("save-review", async () => {
+      const repository = await prisma.repo.findFirst({
+        where: {
+          ownerId: userId,
+          fullName: `${owner}/${repo}`,
+          name: repo,
+        },
+      });
+
+      if (repository) {
+        await prisma.review.create({
+          data: {
+            repositoryId: repository.id,
+            prNumber,
+            prTitle: title,
+            prUrl: `https://github.com/${owner}/${repo}/pull/${prNumber}`,
+            review,
+            status: "completed",
+          },
+        });
+      }
+    });
+    return { success: true };
   }
 );
