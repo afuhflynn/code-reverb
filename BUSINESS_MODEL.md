@@ -1,5 +1,7 @@
 # CodeReverb Business Model
 
+*Note: While CodeReverb offers a commercial SaaS service, the underlying codebase is fully open source under the MIT License. This business model focuses on the hosted service offering.*
+
 ## Overview
 
 CodeReverb is a SaaS platform that leverages artificial intelligence to revolutionize code review processes for development teams. By integrating directly with GitHub, the platform provides automated, intelligent code analysis and feedback on pull requests, enabling teams to maintain higher code quality while reducing review bottlenecks and accelerating development cycles.

@@ -1,6 +1,14 @@
 # CodeReverb
 
-An AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/issues)
+
+An **open-source** AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
+
+## 🌟 Open Source
+
+CodeReverb is fully open source under the MIT License. The codebase is available on [GitHub](https://github.com/afuhflynn/CodeReverb), and we welcome contributions from the community. While the software is open source, we also offer a hosted SaaS version at [codereverb.dev](https://codereverb.dev) for users who prefer a managed solution.
 
 ## Features
 
@@ -201,6 +209,12 @@ docker-compose up -d
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for detailed information on how to get started, development setup, and our contribution process.
+
+### Community
+
+- **GitHub Issues**: [Report bugs and request features](https://github.com/afuhflynn/CodeReverb/issues)
+- **Discussions**: [Join community discussions](https://github.com/afuhflynn/CodeReverb/discussions)
+- **Discord**: [Chat with the community](https://discord.gg/codereverb)
 
 ## License
 
