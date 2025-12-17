@@ -1,6 +1,6 @@
-import { inngest } from "@/lib/inngest";
-import { prisma } from "@/lib/prisma";
-import { aiOrchestrator } from "@/lib/ai/orchestrator";
+import { inngest } from "../../lib/inngest";
+import { prisma } from "../../lib/prisma";
+import { aiOrchestrator } from "../../lib/ai/orchestrator";
 import { Octokit } from "@octokit/rest";
 
 // PR Analysis Worker
@@ -123,7 +123,7 @@ function calculateTotal(items) {
           "mock code content", // Would be actual diff
           "javascript", // Would detect language
           analysis,
-          persona.id,
+          persona.id
         );
       });
 
@@ -153,7 +153,7 @@ function calculateTotal(items) {
 
       throw error;
     }
-  },
+  }
 );
 
 // Repository Cloning Worker
@@ -182,7 +182,7 @@ export const repoClone = inngest.createFunction(
     });
 
     return { success: true, repoId };
-  },
+  }
 );
 
 // Comment Posting Worker
@@ -233,5 +233,5 @@ export const commentPost = inngest.createFunction(
     });
 
     return { success: true, commentCount: comments.length };
-  },
+  }
 );

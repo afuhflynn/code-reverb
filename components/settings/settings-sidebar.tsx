@@ -13,7 +13,6 @@ import {
   Palette,
   Bot,
   Building,
-  CreditCard,
   Search,
 } from "lucide-react";
 
@@ -75,13 +74,6 @@ const settingsSections = [
     category: "organization",
     badge: "Admin",
   },
-  {
-    id: "billing",
-    name: "Billing & Subscription",
-    icon: CreditCard,
-    description: "Payment methods and billing history",
-    category: "billing",
-  },
 ];
 
 type SettingsTab =
@@ -117,9 +109,6 @@ export function SettingsSidebar({
   );
   const orgSections = filteredSections.filter(
     (s) => s.category === "organization"
-  );
-  const billingSections = filteredSections.filter(
-    (s) => s.category === "billing"
   );
 
   return (
@@ -218,33 +207,6 @@ export function SettingsSidebar({
                       </Badge>
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {section.description}
-                  </div>
-                </div>
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Billing Settings */}
-      <Card>
-        <CardContent className="p-4">
-          <h3 className="font-medium text-sm text-muted-foreground mb-3 uppercase tracking-wider">
-            Billing
-          </h3>
-          <div className="space-y-1">
-            {billingSections.map((section) => (
-              <Button
-                key={section.id}
-                variant={activeSection === section.id ? "secondary" : "ghost"}
-                className="w-full justify-start h-auto p-3"
-                onClick={() => setActiveSection(section.id as SettingsTab)}
-              >
-                <section.icon className="h-4 w-4 mr-3 shrink-0" />
-                <div className="text-left">
-                  <div className="font-medium text-sm">{section.name}</div>
                   <div className="text-xs text-muted-foreground">
                     {section.description}
                   </div>

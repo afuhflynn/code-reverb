@@ -32,28 +32,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  User,
-  Mail,
-  MapPin,
-  Globe,
-  Github,
-  Save,
-  RotateCcw,
-  Download,
-  Key,
-  Shield,
-  Eye,
-  EyeOff,
-  Plus,
-  Trash2,
-  CreditCard,
-  Building,
-  Users,
-  Settings as SettingsIcon,
-  Loader2,
-} from "lucide-react";
+import { Save, RotateCcw, Plus, Trash2, Loader2 } from "lucide-react";
 import {
   useSettingsProfile,
   useUpdateSettingsProfile,
@@ -1104,7 +1083,7 @@ export function SettingsContent({
             <div>
               <p className="font-medium">Analytics & Usage Data</p>
               <p className="text-sm text-muted-foreground">
-                Help improve Code-Reverb by sharing anonymous usage data
+                Help improve CodeReverb by sharing anonymous usage data
               </p>
             </div>
             <Switch
@@ -1257,7 +1236,7 @@ export function SettingsContent({
                   <DialogHeader>
                     <DialogTitle>Create New API Key</DialogTitle>
                     <DialogDescription>
-                      Create a new API key for accessing Code-Reverb
+                      Create a new API key for accessing CodeReverb
                       programmatically.
                     </DialogDescription>
                   </DialogHeader>
@@ -1455,148 +1434,6 @@ export function SettingsContent({
     </div>
   );
 
-  const renderBillingSettings = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Plan</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold">
-                {billing?.subscription?.plan || "Free"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {billing?.subscription?.status === "active"
-                  ? "Active subscription"
-                  : "Inactive"}
-              </p>
-            </div>
-            <Badge
-              variant={
-                billing?.subscription?.status === "active"
-                  ? "default"
-                  : "secondary"
-              }
-            >
-              {billing?.subscription?.status || "Inactive"}
-            </Badge>
-          </div>
-          {billing?.subscription?.currentPeriodEnd && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Next billing date:{" "}
-              {new Date(
-                billing.subscription.currentPeriodEnd
-              ).toLocaleDateString()}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Method</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {billing?.paymentMethod ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CreditCard className="h-8 w-8" />
-                <div>
-                  <p className="font-medium">
-                    {billing.paymentMethod.brand.toUpperCase()} ****{" "}
-                    {billing.paymentMethod.last4}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Expires {billing.paymentMethod.expiryMonth}/
-                    {billing.paymentMethod.expiryYear}
-                  </p>
-                </div>
-              </div>
-              <Button variant="outline">Update</Button>
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground">
-                No payment method on file
-              </p>
-              <Button className="mt-2">Add Payment Method</Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {billing?.invoices && billing.invoices.length > 0 ? (
-            <div className="space-y-3">
-              {billing.invoices.map((invoice: any) => (
-                <div
-                  key={invoice.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">
-                      ${(invoice.amount / 100).toFixed(2)}{" "}
-                      {invoice.currency.toUpperCase()}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(invoice.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        invoice.status === "paid" ? "default" : "secondary"
-                      }
-                    >
-                      {invoice.status}
-                    </Badge>
-                    <Button variant="outline" size="sm" asChild>
-                      <a
-                        href={invoice.downloadUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Download className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No billing history available
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan Management</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Cancel Subscription</p>
-              <p className="text-sm text-muted-foreground">
-                Your subscription will remain active until the end of the
-                current billing period
-              </p>
-            </div>
-            <Button variant="destructive">Cancel Plan</Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
   // Render different content based on active section
   const renderContent = () => {
     switch (activeSection) {
@@ -1616,8 +1453,6 @@ export function SettingsContent({
         return renderAppearanceSettings();
       case "organization":
         return renderOrganizationSettings();
-      case "billing":
-        return renderBillingSettings();
       default:
         return renderProfileSettings();
     }
