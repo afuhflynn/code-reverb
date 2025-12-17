@@ -83,7 +83,7 @@ const Reveal = () => {
                 className="flex items-center space-x-2 text-2xl font-bold text-foreground"
               >
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">R</span>
+                  <span className="text-primary-foreground font-bold">CR</span>
                 </div>
                 {/* <span>CodeReverb</span> */}
               </Link>

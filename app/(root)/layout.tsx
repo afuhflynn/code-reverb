@@ -5,7 +5,6 @@ import Reveal from "@/components/navbar/reveal";
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="w-full min-h-screen">
-      {/* <Navbar /> */}
       <Reveal />
       <main>{children}</main>
       <Footer />

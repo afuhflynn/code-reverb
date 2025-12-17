@@ -5,7 +5,6 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { PricingPreview } from "@/components/landing/pricing-preview";
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { CTASection } from "@/components/landing/cta-section";
-import { Footer } from "@/components/landing/footer";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import AppHero from "@/components/mvpblocks/app-hero";
@@ -20,7 +19,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-background">
       <AppHero />
-      <HeroSection />
+      {/* <HeroSection /> */}
       <FeaturesSection />
       <PricingPreview />
       <TestimonialsSection />

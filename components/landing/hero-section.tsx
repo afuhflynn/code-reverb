@@ -5,7 +5,10 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
       {/* Background pattern */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      <div className="absolute inset-0 bg-grid-pattern opacity-60 z-20" />
+      <div className="absolute inset-0 opacity-10">
+        <div className="h-full w-full bg-[linear-gradient(to_right,rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_1px)] bg-size-[4rem_4rem]"></div>
+      </div>
 
       <div className="relative container mx-auto px-4 py-20 lg:py-32">
         <div className="mx-auto max-w-4xl text-center">
