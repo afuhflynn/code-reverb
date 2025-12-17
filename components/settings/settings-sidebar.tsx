@@ -10,12 +10,9 @@ import {
   Bell,
   Eye,
   Key,
-  Github,
   Palette,
   Bot,
-  Zap,
   Building,
-  CreditCard,
   Search,
 } from "lucide-react";
 
@@ -77,18 +74,18 @@ const settingsSections = [
     category: "organization",
     badge: "Admin",
   },
-  {
-    id: "billing",
-    name: "Billing & Subscription",
-    icon: CreditCard,
-    description: "Payment methods and billing history",
-    category: "billing",
-  },
 ];
 
+type SettingsTab =
+  | "profile"
+  | "notifications"
+  | "ai"
+  | "privacy"
+  | "appearance"
+  | "organization";
 interface SettingsSidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
+  activeSection: SettingsTab;
+  setActiveSection: (section: SettingsTab) => void;
 }
 
 export function SettingsSidebar({
@@ -101,20 +98,17 @@ export function SettingsSidebar({
   const filteredSections = settingsSections.filter(
     (section) =>
       section.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      section.description.toLowerCase().includes(searchTerm.toLowerCase()),
+      section.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const personalSections = filteredSections.filter(
-    (s) => s.category === "personal",
+    (s) => s.category === "personal"
   );
   const platformSections = filteredSections.filter(
-    (s) => s.category === "platform",
+    (s) => s.category === "platform"
   );
   const orgSections = filteredSections.filter(
-    (s) => s.category === "organization",
-  );
-  const billingSections = filteredSections.filter(
-    (s) => s.category === "billing",
+    (s) => s.category === "organization"
   );
 
   return (
@@ -147,9 +141,9 @@ export function SettingsSidebar({
                 key={section.id}
                 variant={activeSection === section.id ? "secondary" : "ghost"}
                 className="w-full justify-start h-auto p-3"
-                onClick={() => setActiveSection(section.id)}
+                onClick={() => setActiveSection(section.id as SettingsTab)}
               >
-                <section.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                <section.icon className="h-4 w-4 mr-3 shrink-0" />
                 <div className="text-left">
                   <div className="font-medium text-sm">{section.name}</div>
                   <div className="text-xs text-muted-foreground">
@@ -174,9 +168,9 @@ export function SettingsSidebar({
                 key={section.id}
                 variant={activeSection === section.id ? "secondary" : "ghost"}
                 className="w-full justify-start h-auto p-3"
-                onClick={() => setActiveSection(section.id)}
+                onClick={() => setActiveSection(section.id as SettingsTab)}
               >
-                <section.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                <section.icon className="h-4 w-4 mr-3 shrink-0" />
                 <div className="text-left">
                   <div className="font-medium text-sm">{section.name}</div>
                   <div className="text-xs text-muted-foreground">
@@ -201,9 +195,9 @@ export function SettingsSidebar({
                 key={section.id}
                 variant={activeSection === section.id ? "secondary" : "ghost"}
                 className="w-full justify-start h-auto p-3"
-                onClick={() => setActiveSection(section.id)}
+                onClick={() => setActiveSection(section.id as SettingsTab)}
               >
-                <section.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                <section.icon className="h-4 w-4 mr-3 shrink-0" />
                 <div className="text-left">
                   <div className="font-medium text-sm flex items-center gap-2">
                     {section.name}
@@ -213,33 +207,6 @@ export function SettingsSidebar({
                       </Badge>
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {section.description}
-                  </div>
-                </div>
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Billing Settings */}
-      <Card>
-        <CardContent className="p-4">
-          <h3 className="font-medium text-sm text-muted-foreground mb-3 uppercase tracking-wider">
-            Billing
-          </h3>
-          <div className="space-y-1">
-            {billingSections.map((section) => (
-              <Button
-                key={section.id}
-                variant={activeSection === section.id ? "secondary" : "ghost"}
-                className="w-full justify-start h-auto p-3"
-                onClick={() => setActiveSection(section.id)}
-              >
-                <section.icon className="h-4 w-4 mr-3 flex-shrink-0" />
-                <div className="text-left">
-                  <div className="font-medium text-sm">{section.name}</div>
                   <div className="text-xs text-muted-foreground">
                     {section.description}
                   </div>

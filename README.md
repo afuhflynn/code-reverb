@@ -1,6 +1,14 @@
-# Code-Reverb
+# CodeReverb
 
-An AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/issues)
+
+An **open-source** AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
+
+## 🌟 Open Source
+
+CodeReverb is fully open source under the MIT License. The codebase is available on [GitHub](https://github.com/afuhflynn/CodeReverb), and we welcome contributions from the community. While the software is open source, we also offer a hosted SaaS version at [codereverb.dev](https://codereverb.dev) for users who prefer a managed solution.
 
 ## Features
 
@@ -41,8 +49,8 @@ An AI-powered code review platform that integrates with GitHub to provide intell
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/afuhflynn/code-reverb.git
-   cd code-reverb
+   git clone https://github.com/afuhflynn/CodeReverb.git
+   cd CodeReverb
    ```
 
 2. **Install dependencies**
@@ -77,7 +85,7 @@ An AI-powered code review platform that integrates with GitHub to provide intell
    # Vector Database (Pinecone)
 
    PINECONE_API_KEY="your_pinecone_api_key"
-   PINECONE_INDEX_NAME="code-reverb"
+   PINECONE_INDEX_NAME="CodeReverb"
    PINECONE_ENVIRONMENT="your_pinecone_environment"
 
    # Email Service (SMTP)
@@ -160,7 +168,7 @@ pnpm start
 ## Project Structure
 
 ```txt
-code-reverb/
+CodeReverb/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
 │   ├── dashboard/         # Dashboard pages
@@ -202,12 +210,18 @@ docker-compose up -d
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for detailed information on how to get started, development setup, and our contribution process.
 
+### Community
+
+- **GitHub Issues**: [Report bugs and request features](https://github.com/afuhflynn/CodeReverb/issues)
+- **Discussions**: [Join community discussions](https://github.com/afuhflynn/CodeReverb/discussions)
+- **Discord**: [Chat with the community](https://discord.gg/codereverb)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- **Documentation**: [docs.code-reverb.dev](https://docs.code-reverb.dev)
-- **Issues**: [GitHub Issues](https://github.com/your-org/code-reverb/issues)
-- **Email**: [Code-Reverb Support](support@code-reverb.dev)
+- **Documentation**: [docs.CodeReverb.dev](https://docs.CodeReverb.dev)
+- **Issues**: [GitHub Issues](https://github.com/your-org/CodeReverb/issues)
+- **Email**: [CodeReverb Support](support@CodeReverb.dev)

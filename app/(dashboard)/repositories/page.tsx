@@ -1,11 +1,11 @@
 "use client";
 
+import { useQueryStates } from "nuqs";
 import { RepositoriesFilters } from "@/components/repositories/repositories-filters";
 import { RepositoriesGrid } from "@/components/repositories/repositories-grid";
 import { RepositoriesHeader } from "@/components/repositories/repositories-header";
 import { RepositoriesList } from "@/components/repositories/repositories-list";
 import { searchParamsSchema } from "@/nuqs";
-import { useQueryStates } from "nuqs";
 
 const RepositoriesPage = () => {
   const [params] = useQueryStates(searchParamsSchema);

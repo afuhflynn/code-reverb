@@ -1,5 +1,5 @@
+import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, Clock, GitBranch } from "lucide-react";
 
 export const getStatusColor = (status: string) => {
   switch (status) {

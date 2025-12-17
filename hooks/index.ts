@@ -11,13 +11,12 @@ import {
 } from "@/lib/github-utils/actions";
 import { connectRepo, fetchRespositories } from "@/lib/repository/actions";
 import {
-  InfiniteData,
-  QueryClient,
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { ALL } from "node:dns";
 import { toast } from "sonner";
 
@@ -49,7 +48,7 @@ export function useUser(id: string) {
 
 export function useUsers() {
   return useQuery({
-    queryKey: ["code-reverb", "users"],
+    queryKey: ["CodeReverb", "users"],
     queryFn: api.queries.users.getMany,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -133,6 +132,7 @@ export function useConnectRepository({
   status,
 }: { search?: string; status?: string } = {}) {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationKey: ["create-webhook", "connect-repo"],
@@ -148,30 +148,27 @@ export function useConnectRepository({
     }) => await connectRepo(owner, repo, githubId),
     onMutate(variables) {
       variables.githubId;
-      // temporarily update the ui (Optimistic ui)
-      queryClient.setQueryData(["repositories"], (prev: RepoWithConnected[]) =>
-        prev.map((repo) => {
-          if (repo.githubId === BigInt(variables.githubId))
-            repo.isConnected = true;
-          return repo;
-        })
-      );
     },
 
     onSuccess: () => {
       toast.success("Repository connected succesfully :)");
-      queryClient.invalidateQueries({ queryKey: ["repositories"] });
+      queryClient.invalidateQueries({
+        queryKey: ["repositories", search, status],
+      });
+      router.refresh();
     },
     onError: (error, variables) => {
       console.error(error);
       toast.error("Failed to connect repository :(");
       // Undo the optimistic ui
-      queryClient.setQueryData(["repositories"], (prev: RepoWithConnected[]) =>
-        prev.map((repo) => {
-          if (repo.githubId === BigInt(variables.githubId))
-            repo.isConnected = true;
-          return repo;
-        })
+      queryClient.setQueryData(
+        ["repositories", search, status],
+        (prev: RepoWithConnected[]) =>
+          prev.map((repo) => {
+            if (repo.githubId === BigInt(variables.githubId))
+              repo.isConnected = true;
+            return repo;
+          })
       );
     },
   });

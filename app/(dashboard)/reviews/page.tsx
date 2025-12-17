@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ReviewsHeader } from "@/components/reviews/reviews-header";
-import { ReviewsFilters } from "@/components/reviews/reviews-filters";
-import { ReviewsTable } from "@/components/reviews/reviews-table";
-import { ReviewsAnalyticsTabs } from "@/components/reviews/reviews-analytics-tabs";
 import { ReviewsActivityTimeline } from "@/components/reviews/reviews-activity-timeline";
+import { ReviewsAnalyticsTabs } from "@/components/reviews/reviews-analytics-tabs";
+import { ReviewsFilters } from "@/components/reviews/reviews-filters";
+import { ReviewsHeader } from "@/components/reviews/reviews-header";
+import { ReviewsTable } from "@/components/reviews/reviews-table";
 
 export default function ReviewsPage() {
   const [filters, setFilters] = useState({});

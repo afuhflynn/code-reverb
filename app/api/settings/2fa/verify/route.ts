@@ -11,13 +11,26 @@ export async function POST(request: NextRequest) {
     if (!token || !secret) {
       return NextResponse.json(
         { error: "Token and secret are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
+    const twoFa = await prisma.tWOFA.findUnique({
+      where: { userId: session.user.id, secret },
+    });
+
+    if (!twoFa) {
+      return NextResponse.json(
+        {
+          error: "Failed to verify two factor authenticatin code.",
+          success: false,
+        },
+        { status: 401 }
+      );
+    }
     // Verify the token
     const verified = speakeasy.totp.verify({
-      secret: secret,
+      secret: twoFa.secret,
       encoding: "base32",
       token: token,
       window: 2, // Allow 2 time windows (30 seconds each)
@@ -27,9 +40,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid 2FA token" }, { status: 400 });
     }
 
-    // In production, save the secret to user record and enable 2FA
-    // For demo, just return success
+    // update user twoFa record with the auth token
+    const updatedTwoFa = await prisma.tWOFA.update({
+      where: { userId: session.user.id },
+      data: {
+        token,
+      },
+    });
 
+    if (!updatedTwoFa) {
+      return NextResponse.json(
+        {
+          error: "Failed to verify two factor authenticatin code.",
+          success: false,
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({
       message: "2FA enabled successfully",
       enabled: true,
@@ -38,7 +65,7 @@ export async function POST(request: NextRequest) {
     console.error("2FA verify error:", error);
     return NextResponse.json(
       { error: "Failed to verify 2FA" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,13 +1,9 @@
 "use client";
 
-import { ActiveRepositories } from "@/components/dashboard/active-repositories";
 import { ActivityChart } from "@/components/dashboard/activity-chart";
-import { AIInsights } from "@/components/dashboard/ai-insights";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardTour } from "@/components/dashboard/dashboard-tour";
 import { MultiActivityChart } from "@/components/dashboard/multi-activity-chart";
-import { RecentPRsFeed } from "@/components/dashboard/recent-prs-feed";
-import { ReviewQueue } from "@/components/dashboard/review-queue";
 import { StatsOverview } from "@/components/dashboard/stats-overview";
 
 export default function DashboardPage() {

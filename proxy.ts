@@ -1,7 +1,6 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
 import { createMiddleware } from "@arcjet/next";
+import { getSessionCookie } from "better-auth/cookies";
+import { type NextRequest, NextResponse } from "next/server";
 import { aj } from "@/lib/arcjet";
 
 const publicPaths = [
@@ -13,6 +12,8 @@ const publicPaths = [
   "/terms",
   "/api/auth",
   "/api/webhooks/github",
+  "/pricing",
+  "/api/inngest",
 ];
 const authPaths = ["/auth"];
 
@@ -64,4 +65,5 @@ export const config = {
   ],
 };
 
+// @ts-ignore
 export default createMiddleware(aj, proxy);
