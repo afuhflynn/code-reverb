@@ -1,14 +1,14 @@
 # CodeReverb
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/issues)
+[![GitHub stars](https://img.shields.io/github/stars/afuhflynn/code-reverb.svg)](https://github.com/afuhflynn/code-reverb/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/afuhflynn/code-reverb.svg)](https://github.com/afuhflynn/code-reverb/issues)
 
 An **open-source** AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
 
 ## 🌟 Open Source
 
-CodeReverb is fully open source under the MIT License. The codebase is available on [GitHub](https://github.com/afuhflynn/CodeReverb), and we welcome contributions from the community. While the software is open source, we also offer a hosted SaaS version at [codereverb.dev](https://codereverb.dev) for users who prefer a managed solution.
+CodeReverb is fully open source under the MIT License. The codebase is available on [GitHub](https://github.com/afuhflynn/code-reverb), and we welcome contributions from the community. While the software is open source, we also offer a hosted SaaS version at [codereverb.dev](https://code-reverb.dev) for users who prefer a managed solution.
 
 ## Features
 
@@ -49,8 +49,8 @@ CodeReverb is fully open source under the MIT License. The codebase is available
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/afuhflynn/CodeReverb.git
-   cd CodeReverb
+   git clone https://github.com/afuhflynn/code-reverb.git
+   cd code-reverb
    ```
 
 2. **Install dependencies**
@@ -212,9 +212,9 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ### Community
 
-- **GitHub Issues**: [Report bugs and request features](https://github.com/afuhflynn/CodeReverb/issues)
-- **Discussions**: [Join community discussions](https://github.com/afuhflynn/CodeReverb/discussions)
-- **Discord**: [Chat with the community](https://discord.gg/codereverb)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/afuhflynn/code-reverb/issues)
+- **Discussions**: [Join community discussions](https://github.com/afuhflynn/code-reverb/discussions)
+- **Discord**: [Chat with the community](https://discord.gg/code-reverb)
 
 ## License
 
@@ -222,6 +222,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Documentation**: [docs.CodeReverb.dev](https://docs.CodeReverb.dev)
-- **Issues**: [GitHub Issues](https://github.com/your-org/CodeReverb/issues)
-- **Email**: [CodeReverb Support](support@CodeReverb.dev)
+- **Documentation**: [docs.codereverb.dev](https://docs.code-reverb.dev)
+- **Issues**: [GitHub Issues](https://github.com/your-org/code-reverb/issues)
+- **Email**: [CodeReverb Support](support@code-reverb.dev)

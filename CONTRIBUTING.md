@@ -6,8 +6,8 @@ Welcome! We're excited that you're interested in contributing to CodeReverb, an 
 
 There are many ways to contribute to CodeReverb:
 
-- **🐛 Report Bugs**: Found a bug? [Open an issue](https://github.com/afuhflynn/CodeReverb/issues/new?template=bug_report.md)
-- **💡 Suggest Features**: Have an idea? [Open a feature request](https://github.com/afuhflynn/CodeReverb/issues/new?template=feature_request.md)
+- **🐛 Report Bugs**: Found a bug? [Open an issue](https://github.com/afuhflynn/code-reverb/issues/new?template=bug_report.md)
+- **💡 Suggest Features**: Have an idea? [Open a feature request](https://github.com/afuhflynn/code-reverb/issues/new?template=feature_request.md)
 - **📝 Improve Documentation**: Help make our docs better
 - **🔧 Write Code**: Fix bugs or add features
 - **🧪 Add Tests**: Improve our test coverage
@@ -29,8 +29,8 @@ Before you begin, ensure you have the following installed:
 1. **Fork and Clone the Repository**
 
    ```bash
-   git clone https://github.com/afuhflynn/CodeReverb.git
-   cd CodeReverb
+   git clone https://github.com/afuhflynn/code-reverb.git
+   cd code-reverb
    ```
 
 2. **Install Dependencies**
@@ -286,7 +286,7 @@ We are committed to providing a welcoming and inclusive environment. Please:
 
 ## Getting Help
 
-- **Documentation**: Check our [docs](https://docs.CodeReverb.dev)
+- **Documentation**: Check our [docs](https://docs.codereverb.dev)
 - **Issues**: Search existing issues first
 - **Discussions**: Use GitHub Discussions for questions
 - **Discord**: Join our community Discord
