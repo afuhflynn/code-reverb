@@ -1,7 +1,9 @@
-import { inngest } from "../../lib/inngest";
-import { prisma } from "../../lib/prisma";
-import { aiOrchestrator } from "../../lib/ai/orchestrator";
+import { inngest } from "@/lib/inngest";
+import { prisma } from "@/lib/prisma";
+import { aiOrchestrator } from "@/lib/ai/orchestrator";
 import { Octokit } from "@octokit/rest";
+import { getRepoFileContents } from "@/lib/github-utils";
+import { indexCodebase } from "@/lib/ai/lib/rag";
 
 // PR Analysis Worker
 export const prAnalyze = inngest.createFunction(
@@ -233,5 +235,40 @@ export const commentPost = inngest.createFunction(
     });
 
     return { success: true, commentCount: comments.length };
+  }
+);
+
+// Repo indexing Worker (Embed to pinecone)
+export const indexRepo = inngest.createFunction(
+  {
+    id: "index-repo",
+  },
+  {
+    event: "repository.connected",
+  },
+  async ({ event, step }) => {
+    const { owner, repo, userId } = event.data;
+
+    // Fetch all files in repo
+    const files = await step.run("fetch-files", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          userId,
+          providerId: "github",
+        },
+      });
+
+      if (!account?.accessToken)
+        throw new Error("No GitHub access token found");
+
+      return await getRepoFileContents(account.accessToken, owner, repo);
+    });
+
+    // Index codebase
+    await step.run("index-codebase", async () => {
+      await indexCodebase(`${owner}/${repo}`, files);
+    });
+
+    return { success: true, indexedFiles: files.length };
   }
 );

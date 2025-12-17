@@ -177,3 +177,77 @@ export async function deleteWebHook(owner: string, repo: string) {
     return false;
   }
 }
+
+export async function getRepoFileContents(
+  accessToken: string,
+  owner: string,
+  repo: string,
+  path: string = ""
+): Promise<{ path: string; content: string }[]> {
+  const octokit = new Octokit({ auth: accessToken });
+  const { data } = await octokit.rest.repos.getContent({
+    owner,
+    repo,
+    path,
+  });
+
+  if (!Array.isArray(data)) {
+    // It's a file
+    if (data.type === "file" && data.content) {
+      return [
+        {
+          path: data.path,
+          content: Buffer.from(data.content, "base64").toString("utf-8"),
+        },
+      ];
+    }
+    return [];
+  }
+
+  let files: { path: string; content: string }[] = [];
+
+  for (const item of data) {
+    if (item.type === "file") {
+      const { data: fileData } = await octokit.rest.repos.getContent({
+        owner,
+        repo,
+        path: item.path,
+      });
+
+      if (
+        !Array.isArray(fileData) &&
+        fileData.type === "file" &&
+        fileData.content
+      ) {
+        // Filter out non-code files if needed (images, etc.)
+        // Include only files that contain text
+        if (
+          !item.path.match(
+            /\.(png|jpg|jpeg|gif|svg|ico|webp|avif|bmp|tiff|pdf|ttf|otf|woff|woff2|eot|zip|tar|gz|rar|7z|exe|dll|so|dylib|bin|mp3|mp4|wav|avi|mov|mkv|webm|lock|min\.js|min\.css|bundle\.js|chunk\.js|map)$/i
+          ) &&
+          !item.path.includes("node_modules/") &&
+          !item.path.includes(".git/") &&
+          !item.path.includes("dist/") &&
+          !item.path.includes("build/") &&
+          !item.path.includes("coverage/")
+        ) {
+          files.push({
+            path: item.path,
+            content: Buffer.from(fileData.content, "base64").toString("utf-8"),
+          });
+        }
+      }
+    } else if (item.type === "dir") {
+      const subFiles = await getRepoFileContents(
+        accessToken,
+        owner,
+        repo,
+        item.path
+      );
+
+      files = files.concat(subFiles);
+    }
+  }
+
+  return files;
+}

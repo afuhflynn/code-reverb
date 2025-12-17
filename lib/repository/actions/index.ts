@@ -9,6 +9,7 @@ import {
   getRepositories,
 } from "@/lib/github-utils";
 import { revalidatePath } from "next/cache";
+import { inngest } from "@/lib/inngest";
 
 export async function fetchRespositories(
   page: number = 1,
@@ -58,7 +59,19 @@ export async function connectRepo(
     });
   }
 
-  // TODO: Trigger repo indexing
+  // Trigger repo indexing
+  try {
+    await inngest.send({
+      name: "repository.connected",
+      data: {
+        owner,
+        repo,
+        userId: session.user.id,
+      },
+    });
+  } catch (error) {
+    console.log("Failed to trigger repository indexing: ", error);
+  }
 
   return webhook;
 }
