@@ -295,7 +295,7 @@ List only PRs explicitly mentioned in the diff or PR description. Do not invent.
 - **Insufficient Context**: list items needing manual review
 
 ---
-** Poem: **
+## Poem:
 
 Generate a short, relevant poem about the **specific changes in this pull request**.
 
@@ -313,13 +313,6 @@ FORMAT (mandatory):
 > Line one of the poem
 > Line two of the poem
 > Line three of the poem
-
----
-
-## Finishing Notes
-- **Do not** reference files not in the diff.
-- **Do not** invent line numbers. If you do, mark them LOW CONFIDENCE and explain why.
-- Keep emoji usage minimal and professional (see emoji policy below).
 
 ---
 
