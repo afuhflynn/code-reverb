@@ -50,12 +50,7 @@ const sections = [
     content:
       "CodeReverb provides AI-powered code review services for GitHub repositories. We grant you a limited, non-exclusive, non-transferable license to access and use our platform in accordance with these terms and applicable law.",
   },
-  {
-    icon: Users,
-    title: "User Responsibilities & Conduct",
-    content:
-      "Users must maintain the security of their accounts, ensure compliance with applicable laws, respect intellectual property rights, and not use the service for malicious purposes. You are responsible for all activity under your account.",
-  },
+
   {
     icon: AlertCircle,
     title: "Service Availability & Limitations",
