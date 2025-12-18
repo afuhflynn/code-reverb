@@ -38,6 +38,7 @@ export function RepositoriesList() {
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
+    refetch,
   } = useRepositories({ search: params.repoSearch, status: params.status });
   const allRepos = data?.pages.flatMap((page) => page) || [];
   const [repoToConnect, setRepoToConnect] = useState<number | null>(null);
@@ -106,7 +107,7 @@ export function RepositoriesList() {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center space-x-4 flex-1 min-w-0">
                 <Avatar className="h-12 w-12 border-2 border-muted">
-                  <AvatarImage src={repo.owner.avatar_url} alt={repo.name} />
+                  <AvatarImage src={repo?.owner?.avatar_url} alt={repo.name} />
                   <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary/5 text-primary font-semibold">
                     {repo.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -187,11 +188,18 @@ export function RepositoriesList() {
                   }
                   variant={repo.isConnected ? "secondary" : "default"}
                   onClick={() => {
-                    connectRepo({
-                      owner: repo.full_name.split("/")[0],
-                      repo: repo.name,
-                      githubId: repo.id,
-                    });
+                    connectRepo(
+                      {
+                        owner: repo.full_name.split("/")[0],
+                        repo: repo.name,
+                        githubId: repo.id,
+                      },
+                      {
+                        onSuccess() {
+                          refetch();
+                        },
+                      }
+                    );
                     setRepoToConnect(repo.id);
                   }}
                   disabled={

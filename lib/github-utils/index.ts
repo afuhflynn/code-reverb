@@ -103,15 +103,32 @@ export const getRepositories = async (
   });
 
   if (search) {
-    // Only filter if there's a search term
-    const filtered = data.filter(
-      (r) =>
-        r.name.toLowerCase().includes(search.toLowerCase()) ||
-        r.full_name.toLowerCase().includes(search.toLowerCase()) ||
-        r.description?.toLowerCase().includes(search.toLowerCase()) ||
-        r.owner.login.toLowerCase().includes(search.toLowerCase())
+    const account = await prisma.account.findFirst({
+      where: {
+        accessToken: token,
+      },
+      include: {
+        user: {
+          include: {
+            repos: true,
+          },
+        },
+      },
+    });
+    const { data } = await octokit.rest.search.repos({
+      q: `${search} user:${account?.user.repos[0].fullName.split("/")[0]}`,
+      sort: "updated",
+      order: "desc",
+      per_page: perPage,
+      page,
+    });
+
+    const filteredRepos = data.items.filter(
+      (item) =>
+        item.full_name ===
+        `${account?.user.repos[0].fullName.split("/")[0]}/${item.name}`
     );
-    return filtered;
+    return filteredRepos;
   }
 
   // No search term → return all repos on the page

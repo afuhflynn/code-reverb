@@ -4,7 +4,7 @@ import { Skeleton } from "../ui/skeleton";
 // Loading skeleton component for individual repository card
 export function RepositoryCardSkeleton() {
   return (
-    <Card>
+    <Card className="w-full!">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 flex-1">
@@ -37,7 +37,7 @@ export function RepositoryCardSkeleton() {
 // Loading skeleton for grid card
 export function RepositoryGridCardSkeleton() {
   return (
-    <Card>
+    <Card className="w-full!">
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <Skeleton className="h-10 w-10 rounded-full" />

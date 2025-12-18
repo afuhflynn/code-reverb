@@ -28,8 +28,11 @@ export async function getDashboardStats() {
     // Get user's github username
     const { data: user } = await octokit.rest.users.getAuthenticated();
 
-    // TODO: Fetch the total connected repos for the user.
-    const totalRepos = 60; // NOTE: Dummy data
+    const totalRepos = await prisma.repo.count({
+      where: {
+        ownerId: session.user.id,
+      },
+    });
 
     // Fetch user contribution stats
     const calendar = await fetchUserGithubContributions(user.login, token);
@@ -43,8 +46,11 @@ export async function getDashboardStats() {
 
     const totalPRs = PRs.total_count;
 
-    // TODO: Count ai reviews from the db
-    const totalReviews = 44;
+    const totalReviews = await prisma.review.count({
+      where: {
+        userId: session.user.id,
+      },
+    });
 
     return {
       totalCommits,
@@ -153,28 +159,13 @@ export async function getMonthlyActivity() {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 6);
 
-    // TODO: REVIEWS'S REAL DATA
-    const generateSampleReviews = () => {
-      const sampleReviews = [];
-      const now = new Date();
-
-      // Generate random reviews over the past 6 months
-      for (let i = 0; i < 45; i++) {
-        const randomDaysAgo = Math.floor(Math.random() * 180); // Random day in last 6 months
-        const reviewDate = new Date(now);
-        reviewDate.setDate(reviewDate.getDate() - randomDaysAgo);
-
-        sampleReviews.push({
-          createdAt: reviewDate,
-        });
-      }
-
-      return sampleReviews;
-    };
-
-    const reviews = generateSampleReviews();
+    const reviews = await prisma.review.findMany({
+      where: {
+        userId: session.user.id,
+      },
+    });
     reviews.forEach((review) => {
-      const monthKey = months[review.createdAt.getMonth()];
+      const monthKey = months[new Date(review.createdAt).getMonth()];
       if (monthlyData[monthKey]) {
         monthlyData[monthKey].reviews += 1;
       }

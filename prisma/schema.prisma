@@ -25,6 +25,7 @@ model User {
   privacySettings    Json           @default("{}")
   appearanceSettings Json           @default("{}")
   createdAt          DateTime       @default(now())
+  twoFactorEnabled   Boolean        @default(false)
   updatedAt          DateTime       @updatedAt
   sessions           Session[]
   accounts           Account[]
@@ -36,6 +37,8 @@ model User {
   organization       Organization?  @relation(fields: [organizationId], references: [id])
   organizations      Organization[] @relation("OrganizationMembers")
   ownedOrganizations Organization[] @relation("OrganizationOwner") // <-- back-relation
+  pullRequests       PullRequest[] // as author
+  reviews            Review[] // as user
 
   @@unique([email])
   @@map("user")
@@ -110,6 +113,7 @@ model Repo {
   githubId       BigInt        @unique
   ownerId        String
   owner          User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  username       String
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   webhookId      String?
@@ -118,6 +122,7 @@ model Repo {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   reviews        Review[]
+  pullRequests   PullRequest[]
 
   @@index([ownerId])
   @@index([organizationId])
@@ -128,6 +133,8 @@ model Review {
   id           String @id @default(cuid())
   repositoryId String
   repository   Repo   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   prNumber     Int
   prTitle      String
   prUrl        String
@@ -152,6 +159,7 @@ model Persona {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  runs        Run[]
 
   @@index([userId])
   @@map("persona")
@@ -165,6 +173,8 @@ model Comment {
   githubId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  run       Run?     @relation(fields: [runId], references: [id])
+  runId     String?
 
   @@map("comment")
 }
@@ -177,9 +187,47 @@ model Feedback {
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  run       Run?     @relation(fields: [runId], references: [id])
+  runId     String?
 
   @@index([userId])
   @@map("feedback")
+}
+
+model PullRequest {
+  id        String   @id @default(cuid())
+  number    Int
+  title     String
+  url       String
+  repoId    String
+  repo      Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  runs      Run[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([repoId, number])
+  @@map("pull_request")
+}
+
+model Run {
+  id             String      @id @default(cuid())
+  prId           String
+  pr             PullRequest @relation(fields: [prId], references: [id], onDelete: Cascade)
+  status         String      @default("pending")
+  processingTime Int?
+  personaId      String
+  persona        Persona     @relation(fields: [personaId], references: [id])
+  result         String?     @db.Text
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  comments       Comment[]
+  feedbacks      Feedback[]
+
+  @@index([prId])
+  @@index([personaId])
+  @@map("run")
 }
 
 model ApiKey {

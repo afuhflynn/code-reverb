@@ -10,6 +10,7 @@ import {
 } from "@/lib/github-utils/actions";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
+import { blackForestLabs } from "@ai-sdk/black-forest-labs";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -59,7 +60,7 @@ export const commentPost = inngest.createFunction(
     });
 
     return { success: true, commentCount: comments.length };
-  }
+  },
 );
 
 // Repo indexing Worker (Embed to pinecone)
@@ -94,7 +95,7 @@ export const indexRepo = inngest.createFunction(
     });
 
     return { success: true, indexedFiles: files.length };
-  }
+  },
 );
 
 // Ai code review Worker
@@ -104,7 +105,15 @@ export const generateReview = inngest.createFunction(
   { event: "pr.review.requested" },
 
   async ({ event, step }) => {
-    const { owner, repo, prNumber, userId } = event.data;
+    const { owner, repo, prNumber, userId, runId } = event.data;
+
+    // Update run status to running
+    await step.run("update-run-status", async () => {
+      await (prisma as any).run.update({
+        where: { id: runId },
+        data: { status: "running" },
+      });
+    });
 
     const { diff, title, description, token } = await step.run(
       "fetch-pr-data",
@@ -124,10 +133,10 @@ export const generateReview = inngest.createFunction(
           account.accessToken,
           owner,
           repo,
-          prNumber
+          prNumber,
         );
         return { ...data, token: account.accessToken };
-      }
+      },
     );
 
     const context = await step.run("retrieve-context", async () => {
@@ -325,7 +334,6 @@ FORMAT (mandatory):
 
 **End of Review**
 *This review followed the Anti-Hallucination Protocol: only visible code reviewed; assumptions flagged; manual review items called out.*`;
-
       const { text } = await generateText({
         model: google("gemini-2.5-flash"),
         prompt,
@@ -338,7 +346,50 @@ FORMAT (mandatory):
       await postReviewComment(token, owner, repo, prNumber, review);
     });
 
-    await step.run("save-review", async () => {
+    await step.run("save-review-result", async () => {
+      const startTime = Date.now();
+
+      // Save review result to Run
+      await (prisma as any).run.update({
+        where: { id: runId },
+        data: {
+          result: review,
+          status: "completed",
+          processingTime: Date.now() - startTime,
+        },
+      });
+
+      // Parse review text to extract comments (simplified: create one comment per file section)
+      const fileSections = review.split(/### File: `([^`]+)`/);
+      for (let i = 1; i < fileSections.length; i += 2) {
+        const filePath = fileSections[i];
+        const content = fileSections[i + 1]
+          ?.split(/### File: |## [^#]/)?.[0]
+          ?.trim();
+
+        if (content) {
+          await (prisma as any).comment.create({
+            data: {
+              runId,
+              filePath,
+              content,
+            },
+          });
+        }
+      }
+
+      // If no file sections found, save full review as one comment
+      if (fileSections.length <= 1) {
+        await (prisma as any).comment.create({
+          data: {
+            runId,
+            filePath: null,
+            content: review,
+          },
+        });
+      }
+
+      // Keep old Review model for backward compatibility
       const repository = await prisma.repo.findFirst({
         where: {
           ownerId: userId,
@@ -356,10 +407,11 @@ FORMAT (mandatory):
             prUrl: `https://github.com/${owner}/${repo}/pull/${prNumber}`,
             review,
             status: "completed",
+            userId,
           },
         });
       }
     });
     return { success: true };
-  }
+  },
 );
