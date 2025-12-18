@@ -4,10 +4,6 @@
 [![GitHub stars](https://img.shields.io/github/stars/afuhflynn/code-reverb.svg)](https://github.com/afuhflynn/code-reverb/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/afuhflynn/code-reverb.svg)](https://github.com/afuhflynn/code-reverb/issues)
 
-An **open-source** AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
-
-## 🌟 Open Source
-
 CodeReverb is fully open source under the MIT License. The codebase is available on [GitHub](https://github.com/afuhflynn/code-reverb), and we welcome contributions from the community. While the software is open source, we also offer a hosted SaaS version at [codereverb.dev](https://code-reverb.dev) for users who prefer a managed solution.
 
 ## Features
