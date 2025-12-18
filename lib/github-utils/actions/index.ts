@@ -225,6 +225,7 @@ export async function getPullRequestDiff(
     diff: diff as unknown as string,
     title: pr.title,
     description: pr.body || "",
+    author: pr.user.name,
   };
 }
 

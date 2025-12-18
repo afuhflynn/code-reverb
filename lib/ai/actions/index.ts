@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export async function reviewPullRequest(
   owner: string,
   repo: string,
-  prNumber: number,
+  prNumber: number
 ) {
   try {
     const repository = await prisma.repo.findFirst({
@@ -30,7 +30,7 @@ export async function reviewPullRequest(
 
     if (!repository)
       throw new Error(
-        `Repository ${owner}/${repo} not found in databse. Please reconnect the repository.`,
+        `Repository ${owner}/${repo} not found in databse. Please reconnect the repository.`
       );
 
     const githubAccount = repository.owner.accounts[0];
@@ -44,7 +44,7 @@ export async function reviewPullRequest(
       token,
       owner,
       repo,
-      prNumber,
+      prNumber
     );
 
     // Find or create PullRequest
@@ -64,7 +64,7 @@ export async function reviewPullRequest(
           title: title || "Untitled PR",
           url: `https://github.com/${owner}/${repo}/pull/${prNumber}`,
           repoId: repository.id,
-          authorId: null, // TODO: implement author lookup
+          authorId: githubAccount.userId,
         },
       });
     }
@@ -77,7 +77,7 @@ export async function reviewPullRequest(
 
     if (!defaultPersona) {
       throw new Error(
-        "No persona found for user. Please create a persona first.",
+        "No persona found for user. Please create a persona first."
       );
     }
 
