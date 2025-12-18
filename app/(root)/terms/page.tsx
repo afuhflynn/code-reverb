@@ -58,12 +58,6 @@ const sections = [
       "While we strive for high availability, we do not guarantee uninterrupted service. AI-generated reviews are provided 'as-is' and should be reviewed by qualified developers. We are not liable for any damages from service interruptions.",
   },
   {
-    icon: Scale,
-    title: "Billing, Payment & Subscriptions",
-    content:
-      "Subscription fees are billed in advance and are non-refundable except as required by law. We reserve the right to change pricing with 30 days notice. Failed payments may result in service suspension.",
-  },
-  {
     icon: XCircle,
     title: "Termination & Account Closure",
     content:
