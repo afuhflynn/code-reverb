@@ -55,6 +55,7 @@ export async function connectRepo(
         ownerId: session.user.id,
         fullName: `${owner}/${repo}`,
         url: `https://github.com/${owner}/${repo}.git`,
+        username: owner,
       },
     });
   }
@@ -92,6 +93,7 @@ export async function getConnectedRepositories() {
         url: true,
         createdAt: true,
         updatedAt: true,
+        username: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -120,7 +122,7 @@ export async function disconnectRepo(repoId: string) {
     await prisma.repo.delete({
       where: { id: repoId },
     });
-    await deleteWebHook(repo.fullName.split("/")[0], repo.name);
+    await deleteWebHook(repo.username, repo.name);
     revalidatePath("/settings", "page");
     revalidatePath("/repositories", "page");
     return { success: true };
@@ -140,7 +142,7 @@ export async function disconnectAllRepos() {
     const repos = await getConnectedRepositories();
     await Promise.all(
       repos.map(async (repo) => {
-        await deleteWebHook(repo.fullName.split("/")[0], repo.name);
+        await deleteWebHook(repo.username, repo.name);
       })
     );
 

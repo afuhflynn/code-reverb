@@ -36,6 +36,7 @@ export function RepositoriesGrid() {
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
+    refetch,
   } = useRepositories({ search: params.repoSearch, status: params.status });
   const allRepos = data?.pages.flatMap((page) => page) || [];
   const [repoToConnect, setRepoToConnect] = useState<number | null>(null);
@@ -72,6 +73,15 @@ export function RepositoriesGrid() {
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+  if (isPending) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(5)].map((_, i) => (
+          <RepositoryGridCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
   // Error state
   if (isError) {
     return <ErrorState />;
@@ -93,7 +103,7 @@ export function RepositoriesGrid() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <Avatar className="h-12 w-12 border-2 border-muted">
-                  <AvatarImage src={repo.owner.avatar_url} alt={repo.name} />
+                  <AvatarImage src={repo?.owner?.avatar_url} alt={repo.name} />
                   <AvatarFallback className="bg-linear-to-br from-primary/20 to-primary/5 text-primary font-semibold">
                     {repo.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -174,11 +184,18 @@ export function RepositoriesGrid() {
                     }
                     variant={repo.isConnected ? "secondary" : "default"}
                     onClick={() => {
-                      connectRepo({
-                        owner: repo.full_name.split("/")[0],
-                        repo: repo.name,
-                        githubId: repo.id,
-                      });
+                      connectRepo(
+                        {
+                          owner: repo.full_name.split("/")[0],
+                          repo: repo.name,
+                          githubId: repo.id,
+                        },
+                        {
+                          onSuccess() {
+                            refetch();
+                          },
+                        }
+                      );
                       setRepoToConnect(repo.id);
                     }}
                     disabled={

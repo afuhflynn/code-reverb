@@ -150,12 +150,8 @@ export function useConnectRepository({
       variables.githubId;
     },
 
-    onSuccess: () => {
-      toast.success("Repository connected succesfully :)");
-      queryClient.invalidateQueries({
-        queryKey: ["repositories", search, status],
-      });
-      router.refresh();
+    onSuccess: (_, variables) => {
+      toast.success("Repository connected successfully");
     },
     onError: (error, variables) => {
       console.error(error);
