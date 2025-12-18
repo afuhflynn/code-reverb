@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk/black-forest-labs':
+        specifier: ^0.0.7
+        version: 0.0.7(zod@4.1.13)
       '@ai-sdk/google':
         specifier: ^1.2.22
         version: 1.2.22(zod@4.1.13)
@@ -293,6 +296,12 @@ importers:
         version: 5.0.9(@types/react@19.2.7)(react@19.2.1)(use-sync-external-store@1.6.0(react@19.2.1))
 
 packages:
+
+  '@ai-sdk/black-forest-labs@0.0.7':
+    resolution: {integrity: sha512-49LLkXJ1JufeeE+zXnag72khAvy6K2cznVSgy2rlw4AuVDI+fUWA6iq7u6l7LxOYFCY+3SsyGFTj23eYOLGFFQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
 
   '@ai-sdk/gateway@2.0.21':
     resolution: {integrity: sha512-BwV7DU/lAm3Xn6iyyvZdWgVxgLu3SNXzl5y57gMvkW4nGhAOV5269IrJzQwGt03bb107sa6H6uJwWxc77zXoGA==}
@@ -4677,6 +4686,12 @@ packages:
         optional: true
 
 snapshots:
+
+  '@ai-sdk/black-forest-labs@0.0.7(zod@4.1.13)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.1.13)
+      zod: 4.1.13
 
   '@ai-sdk/gateway@2.0.21(zod@4.1.13)':
     dependencies:
