@@ -74,6 +74,13 @@ const settingsSections = [
     category: "organization",
     badge: "Admin",
   },
+  {
+    id: "repositories",
+    name: "Repositories",
+    icon: Building,
+    description: "Connected code repositories",
+    category: "organization",
+  },
 ];
 
 type SettingsTab =
@@ -82,7 +89,8 @@ type SettingsTab =
   | "ai"
   | "privacy"
   | "appearance"
-  | "organization";
+  | "organization"
+  | "repositories";
 interface SettingsSidebarProps {
   activeSection: SettingsTab;
   setActiveSection: (section: SettingsTab) => void;
