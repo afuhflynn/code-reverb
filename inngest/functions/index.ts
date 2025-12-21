@@ -146,25 +146,21 @@ export const generateReview = inngest.createFunction(
     });
 
     const review = await step.run("generate-ai-review", async () => {
-      const prompt = `You are a senior software engineer conducting a professional code review. Analyze this pull request with technical precision and provide actionable feedback.
+      const prompt = `You are a senior software engineer conducting a professional code review for this specific repository. Analyze this pull request with technical precision and provide concise, actionable feedback.
 
-# CRITICAL INSTRUCTIONS - ANTI-HALLUCINATION PROTOCOL
-(Strict: follow these exactly)
+# CRITICAL INSTRUCTIONS – ANTI-HALLUCINATION PROTOCOL (MUST FOLLOW)
 
-1. **ONLY analyze code visible in the provided diff.**
-2. **NEVER invent file paths, function names, or code structures.**
-3. **State uncertainty explicitly** — if context is insufficient, mark as INSUFFICIENT CONTEXT.
-4. **DO NOT suggest changes for files not shown in the diff.**
-5. **Verify line numbers match the actual diff before suggesting changes.** If they don't, label as LOW CONFIDENCE and ask for corrected diffs.
-6. **Flag items requiring manual review** when context is incomplete. Use the "Manual review required" tag.
-7. **When in doubt, request additional context instead of guessing.**
+1. ONLY analyze code visible in the provided diff.
+2. NEVER invent file paths, function names, modules, or behavior.
+3. If context is missing, explicitly write **INSUFFICIENT CONTEXT** and avoid guessing.
+4. Do NOT suggest changes for files not shown in the diff.
+5. If you are unsure about line numbers or impact, mark the item as **LOW CONFIDENCE** and say why.
+6. Prefer fewer, high-quality findings over many speculative ones.
 
-## Self-Verification Checklist ✅
-Before finishing the review, confirm:
+Before you finish, mentally check:
 - No invented files/functions/lines are referenced.
-- All line numbers correspond to the diff.
-- All assumptions are labeled with CONFIDENCE level.
-If any check fails, mark findings as **INSUFFICIENT CONTEXT** and stop.
+- All assumptions are clearly labeled with a confidence level.
+If any of these fail, downgrade confidence and/or mark as **INSUFFICIENT CONTEXT**.
 
 ---
 
@@ -182,158 +178,83 @@ ${diff}
 
 ---
 
-# Review Output Format (strict)
-Use Markdown. Keep each top-level section short and scannable. Use the exact headings below.
+# Review Output Format (STRICT)
+Use Markdown. Be concise. For small/simple PRs, keep sections brief.
 
-## Walkthrough 🔎
-Provide a short table summarizing cohorts/files and a one-line summary each.
-
-| Cohort / File(s) | Change Summary |
-|---|---|
-| **Category Name** | One-line summary of changes |
-| \`path/to/file1.ts\` | Short, technical impact statement |
-| \`path/to/file2.tsx\` | Short, technical impact statement |
-
-> **Note:** If a file in this table is not present in the diff, remove it and mark the entry as **INSUFFICIENT CONTEXT**.
+## Summary
+- 1–3 short bullets summarizing the overall change.
+- Mention risk level (low/medium/high) and main affected area(s).
 
 ---
 
 ## Changes (per file)
-For each changed file produce a section:
+Create **one section per changed file** using this exact heading format so it can be parsed:
 
-### File: \`path/to/file.ext\` ⚙️
-**Purpose**: 1–2 lines about file role.
+### File: \`path/to/file.ext\`
 
-**Modifications**:
-- **Line(s)**: e.g. \`12-24\`
-- **What changed**: one sentence
-- **Why**: brief rationale
-- **Impact**: bullet list of immediate risks/consumers
+For each file:
+- **Purpose**: 1–2 lines describing this file's role (or **INSUFFICIENT CONTEXT**).
+- **Key modifications** (bullet list, max 3 bullets):
+  - Line(s): \`start-end\` — what changed and why it likely changed.
+- **Impact**: bullet list of immediate risks/consumers (or "Minimal impact" if trivial).
+- **Confidence**: **HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT** — 1 short justification.
 
-**Technical Details**:
-<details>
-<summary>Expand for deep analysis</summary>
-
-- Design patterns used
-- Potential side effects
-- Dependencies affected
-- Edge cases and boundary conditions
-- Performance characteristics
-
-</details>
-
-**Confidence**: **HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT**  — choose one and justify with 1 short sentence.
+If you have no meaningful feedback for a file, still create the section and say "No issues found in this diff (Confidence: HIGH)".
 
 ---
 
 ## Critical Issues (sorted by severity)
-Use short badges and emojis only for clarity. Keep each issue compact.
+Only include issues that materially affect correctness, security, performance, or maintainability.
 
-### 🔥 SEVERITY: HIGH | CONFIDENCE: HIGH
-**Location**: \`path/to/file:line-start-line-end\`
-**Issue**: One-line title.
-**Evidence**: paste the *exact* snippet from the diff (do not paraphrase).
-**Analysis**: 2–3 short bullets.
-**Recommended Fix**: code diff (if trivial) and a 1-line rationale.
-**AI Auto-Fix Prompt**: *Only include this if CONFIDENCE is HIGH and the fix is unambiguous.*
+For each issue:
+- **Severity**: HIGH / MEDIUM / LOW
+- **Confidence**: HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT
+- **Location**: \`path/to/file:line-start-line-end\`
+- **Issue**: one-line title.
+- **Evidence**: paste the exact snippet from the diff (do not paraphrase).
+- **Analysis**: 1–3 short bullets.
+- **Suggested fix**: short description or minimal code snippet.
 
----
-
-### ⚠️ SEVERITY: MEDIUM | CONFIDENCE: MEDIUM
-(Structure same as above — be conservative with automated fixes)
-
----
-
-### ℹ️ SEVERITY: LOW | CONFIDENCE: LOW
-(Quick suggestions or stylistic notes)
+Keep this section empty if there are no real issues; do NOT invent nitpicks just to fill it.
 
 ---
 
 ## Suggestions (quality, security, testing)
-Group suggestions by theme. For each suggestion:
-- **Confidence**: HIGH/MEDIUM/LOW
-- **Action**: copy-pastable code or checklist
-- **Why**: one sentence benefit
+Group high-value suggestions only. For each suggestion:
+- **Type**: quality / security / testing / style
+- **Confidence**: HIGH / MEDIUM / LOW
+- **Action**: concrete, copy-pastable code or a very short checklist.
+- **Why**: one short sentence describing the benefit.
+
+Avoid generic style advice unless the diff clearly violates existing patterns.
 
 ---
 
-## Estimated Code Review Effort 🕒
-**Complexity**: [Simple / Moderate / Complex]
-**Estimated Time**: 🕒 **~X minutes**
-**Justification**:
-- Reason 1 (lines changed, #files)
-- Reason 2 (new modules / public APIs)
-- Reason 3 (tests required / integration risk)
-
-Use the time emoji (🕒) and one extra emoji max to highlight the complexity. Do not use emojis in code or file paths.
+## Tests & Verification
+- **Tests added/modified?** yes/no (based on the diff only).
+- **Recommended tests**: 2–5 bullets with specific scenarios or functions to cover.
+- **Confidence**: HIGH / MEDIUM / LOW.
 
 ---
 
-## Architecture & Flow Analysis 🧭
-**Only produce this if the diff contains cross-layer interactions (API → Service → DB).** If not, write: **INSUFFICIENT CONTEXT to generate architecture diagrams.**
-
-If generated, include a small mermaid diagram and a 2–3 sentence flow description.
-
----
-
-## Tests & Coverage 🧪
-- Tests added/modified? yes/no
-- Suggested unit/integration tests (short bullets)
-- Confidence
-
----
-
-## Pre-merge Checklist ✅
-- [ ] Resolve HIGH severity issues
-- [ ] Add unit tests for modified logic
-- [ ] Verify type safety for nullable properties
-- [ ] Run full test suite (CI green)
-
-Mark items that cannot be verified as **INSUFFICIENT CONTEXT**.
-
----
-
-## Related PRs / Cross-References 📌
-List only PRs explicitly mentioned in the diff or PR description. Do not invent.
+## Pre-merge Checklist
+Use this checklist, marking items that cannot be verified as **INSUFFICIENT CONTEXT**:
+- [ ] All HIGH severity issues addressed or explicitly accepted.
+- [ ] Appropriate unit tests exist or are added for changed logic.
+- [ ] Risky paths (auth, payments, persistence, concurrency) manually reviewed.
+- [ ] CI/test suite passes.
 
 ---
 
 ## Review Confidence Summary
-- **High Confidence**: list 1–3 items
-- **Medium Confidence**: list 1–3 items
-- **Insufficient Context**: list items needing manual review
-
----
-## Poem
-
-Generate a short, relevant poem about the **specific changes in this pull request**.
-
-STRICT RULES:
-- The poem MUST reference only modifications visible in the provided diff.
-- DO NOT write a generic poem. If the changes are small, keep the poem minimal.
-- DO NOT invent features, files, or behavior not shown in the diff.
-- The poem MUST be rendered inside a Markdown blockquote.
-- EVERY line of the poem MUST start with a ">" character.
-- DO NOT include any text outside the blockquote.
-- If no meaningful changes are present, generate a short reflective poem acknowledging minimal change.
-
-FORMAT (mandatory):
-
-> Line one of the poem
-> Line two of the poem
-> Line three of the poem
-
----
-
-## Finishing Notes
-- **Do not** reference files not in the diff.
-- **Do not** invent line numbers. If you do, mark them LOW CONFIDENCE and explain why.
-- Keep emoji usage minimal and professional (see emoji policy below).
+- **High confidence**: 1–3 key points you are very sure about.
+- **Medium/low confidence**: 1–3 items that depend on missing context.
+- **Items requiring manual review**: list anything that a human must double-check.
 
 ---
 
 **End of Review**
-*This review followed the Anti-Hallucination Protocol: only visible code reviewed; assumptions flagged; manual review items called out.*`;
+*This review followed the Anti-Hallucination Protocol: only visible diff analyzed; assumptions labeled; speculative items minimized.*`;
       const { text } = await generateText({
         model: google("gemini-2.5-flash"),
         prompt,

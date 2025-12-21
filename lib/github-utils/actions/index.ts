@@ -28,12 +28,11 @@ export async function getDashboardStats() {
     // Get user's github username
     const { data: user } = await octokit.rest.users.getAuthenticated();
 
-    const totalRepos = await prisma.repo.count({
-      where: {
-        ownerId: session.user.id,
-      },
+    const userRepos = await octokit.rest.repos.listForUser({
+      username: user.login,
     });
 
+    const totalRepos = userRepos.data.length;
     // Fetch user contribution stats
     const calendar = await fetchUserGithubContributions(user.login, token);
     const totalCommits = calendar?.totalContributions || 0;
@@ -162,8 +161,12 @@ export async function getMonthlyActivity() {
     const reviews = await prisma.review.findMany({
       where: {
         userId: session.user.id,
+        createdAt: {
+          gte: threeMonthsAgo,
+        },
       },
     });
+
     reviews.forEach((review) => {
       const monthKey = months[new Date(review.createdAt).getMonth()];
       if (monthlyData[monthKey]) {
