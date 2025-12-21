@@ -97,6 +97,97 @@ export const indexRepo = inngest.createFunction(
   }
 );
 
+// Handle app installation
+export const handleAppInstallation = inngest.createFunction(
+  {
+    id: "app-installation-created",
+  },
+  {
+    event: "installation.created",
+  },
+  async ({ event, step }) => {
+    const { installationId, accountId, login, userId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    step.run("save-app-installation-user-info", async () => {
+      const installation = await prisma.installation.upsert({
+        where: {
+          userId: account.user.id,
+        },
+        create: {
+          accountId: account.id,
+          userId: account.user.id,
+          installationId,
+          githubAccountId: accountId,
+          githubUserId: userId,
+        },
+        update: {
+          installationId,
+          githubAccountId: accountId,
+          githubUserId: userId,
+        },
+      });
+
+      if (!installation) {
+        throw new Error("Failed to save app installation data");
+      }
+      // Give the user a username just like in their github account
+      await prisma.user.update({
+        where: {
+          id: account.user.id,
+        },
+        data: {
+          username: login,
+        },
+      });
+
+      return { success: true };
+    });
+
+    return { success: true };
+  }
+);
+
+// Handle app deletion
+export const handleAppDeletion = inngest.createFunction(
+  {
+    id: "app-installation-deleted",
+  },
+  { event: "installation.deleted" },
+  async ({ event, step }) => {
+    const { installationId, accountId, userId } = event.data;
+
+    await step.run("delete-installation", async () => {
+      const installation = await prisma.installation.delete({
+        where: {
+          githubAccountId: accountId,
+          githubUserId: userId,
+          installationId,
+        },
+      });
+
+      if (!installation) throw new Error("Installation not found");
+      return { success: true };
+    });
+
+    return { sucess: true };
+  }
+);
+
 // AI PR Summary Worker
 export const summarizePr = inngest.createFunction(
   { id: "summarize-pr", concurrency: 20 },

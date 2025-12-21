@@ -7,10 +7,42 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const event = request.headers.get("x-github-event");
 
-    console.log({ body });
-
     if (event === "ping") {
       return NextResponse.json({ message: "Pong" });
+    }
+
+    if (
+      event === "installation" &&
+      body?.action === "created" &&
+      body?.installation
+    ) {
+      inngest.send({
+        name: "installation.created",
+        data: {
+          installationId: body.installation?.id ?? null,
+          accountId: body.installation?.account?.id ?? null,
+          userId: body.installation?.account?.user?.id ?? null,
+          login: body.installation?.account?.login ?? null,
+        },
+      });
+      return NextResponse.json({ message: "Installation created" });
+    }
+
+    if (
+      event === "uninstall" &&
+      body?.action === "deleted" &&
+      body?.installation
+    ) {
+      inngest.send({
+        name: "installation.deleted",
+        data: {
+          installationId: body.installation?.id ?? null,
+          accountId: body.installation?.account?.id ?? null,
+          userId: body.installation?.account?.user?.id ?? null,
+          login: body.installation?.account?.login ?? null,
+        },
+      });
+      return NextResponse.json({ message: "Installation deleted" });
     }
 
     if (event === "pull_request") {

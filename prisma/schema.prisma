@@ -8,40 +8,60 @@ datasource db {
 }
 
 model User {
-  id                 String         @id @default(cuid())
-  name               String
-  email              String
-  emailVerified      Boolean        @default(false)
-  image              String?
-  bio                String?
-  location           String?
-  website            String?
-  githubUrl          String?
-  showEmail          Boolean        @default(false)
-  showLocation       Boolean        @default(true)
-  emailNotifications Json           @default("{}")
-  inAppNotifications Json           @default("{}")
-  aiSettings         Json           @default("{}")
-  privacySettings    Json           @default("{}")
-  appearanceSettings Json           @default("{}")
-  createdAt          DateTime       @default(now())
-  twoFactorEnabled   Boolean        @default(false)
-  updatedAt          DateTime       @updatedAt
-  sessions           Session[]
-  accounts           Account[]
-  organizationId     String?
-  repos              Repo[]
-  personas           Persona[]
-  feedbacks          Feedback[]
-  apiKeys            ApiKey[]
-  organization       Organization?  @relation(fields: [organizationId], references: [id])
-  organizations      Organization[] @relation("OrganizationMembers")
-  ownedOrganizations Organization[] @relation("OrganizationOwner") // <-- back-relation
-  pullRequests       PullRequest[] // as author
-  reviews            Review[] // as user
+  id                     String         @id @default(cuid())
+  name                   String
+  email                  String
+  username               String?
+  emailVerified          Boolean        @default(false)
+  image                  String?
+  bio                    String?
+  location               String?
+  website                String?
+  githubUrl              String?
+  showEmail              Boolean        @default(false)
+  showLocation           Boolean        @default(true)
+  emailNotifications     Json           @default("{}")
+  inAppNotifications     Json           @default("{}")
+  aiSettings             Json           @default("{}")
+  privacySettings        Json           @default("{}")
+  appearanceSettings     Json           @default("{}")
+  createdAt              DateTime       @default(now())
+  twoFactorEnabled       Boolean        @default(false)
+  hasCompletedOnboarding Boolean        @default(false)
+  updatedAt              DateTime       @updatedAt
+  sessions               Session[]
+  accounts               Account[]
+  organizationId         String?
+  repos                  Repo[]
+  personas               Persona[]
+  feedbacks              Feedback[]
+  apiKeys                ApiKey[]
+  organization           Organization?  @relation(fields: [organizationId], references: [id])
+  organizations          Organization[] @relation("OrganizationMembers")
+  ownedOrganizations     Organization[] @relation("OrganizationOwner") // <-- back-relation
+  pullRequests           PullRequest[] // as author
+  reviews                Review[] // as user
+  installations          Installation[]
 
   @@unique([email])
   @@map("user")
+}
+
+model Installation {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  installationId  String @unique
+  githubAccountId String @unique
+  githubUserId    String @unique
+
+  @@index([installationId, githubAccountId, githubUserId])
+  @@map("installation")
 }
 
 model Session {
@@ -61,19 +81,20 @@ model Session {
 }
 
 model Account {
-  id                    String    @id @default(cuid())
+  id                    String         @id @default(cuid())
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  installations         Installation[]
 
   @@index([userId])
   @@map("account")
