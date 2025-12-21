@@ -10,7 +10,6 @@ import {
 } from "@/lib/github-utils/actions";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
-import { blackForestLabs } from "@ai-sdk/black-forest-labs";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -60,7 +59,7 @@ export const commentPost = inngest.createFunction(
     });
 
     return { success: true, commentCount: comments.length };
-  },
+  }
 );
 
 // Repo indexing Worker (Embed to pinecone)
@@ -95,11 +94,55 @@ export const indexRepo = inngest.createFunction(
     });
 
     return { success: true, indexedFiles: files.length };
-  },
+  }
+);
+
+// AI PR Summary Worker
+export const summarizePr = inngest.createFunction(
+  { id: "summarize-pr", concurrency: 20 },
+  { event: "pr.summary.requested" },
+
+  async ({ event, step }) => {
+    const { owner, repo, prNumber, title, description, installationId } =
+      event.data;
+
+    const summary = await step.run("generate-pr-summary", async () => {
+      const prompt = `You are a senior engineer. Write a concise summary of this pull request for teammates scanning notifications.
+
+Rules:
+- 2–4 bullet points.
+- No implementation details, just what and why at a high level.
+- If the description is empty or unclear, say that explicitly.
+- Do not invent features or files.
+
+PR Title: ${title}
+PR Description:
+${description || "No description provided."}
+`;
+
+      const { text } = await generateText({
+        model: google("gemini-2.5-flash"),
+        prompt,
+      });
+
+      return text;
+    });
+
+    await step.run("post-summary-comment", async () => {
+      await postReviewComment(
+        installationId, // or installation/user token, see your existing code
+        owner,
+        repo,
+        prNumber,
+        summary
+      );
+    });
+
+    return { success: true };
+  }
 );
 
 // Ai code review Worker
-
 export const generateReview = inngest.createFunction(
   { id: "generate-review", concurrency: 5 },
   { event: "pr.review.requested" },
@@ -133,10 +176,10 @@ export const generateReview = inngest.createFunction(
           account.accessToken,
           owner,
           repo,
-          prNumber,
+          prNumber
         );
         return { ...data, token: account.accessToken };
-      },
+      }
     );
 
     const context = await step.run("retrieve-context", async () => {
@@ -334,5 +377,5 @@ Use this checklist, marking items that cannot be verified as **INSUFFICIENT CONT
       }
     });
     return { success: true };
-  },
+  }
 );
