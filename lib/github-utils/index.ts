@@ -158,6 +158,7 @@ export const createWebHook = async (owner: string, repo: string) => {
     config: {
       url: webHookUrl,
       content_type: "json",
+      secret: process.env.GITHUB_APP_WEBHOOK_SECRET!,
     },
     events: ["pull_request"],
   });
