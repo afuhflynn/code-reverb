@@ -118,8 +118,6 @@ export async function POST(request: NextRequest) {
             description: pull_request?.body ?? "",
             userId: owner,
             installationId: body?.installation?.id ?? null,
-            // New flags for improved summary generation
-            fetchDiff: true, // Signal to fetch diff for context
             baseSha: pull_request?.base?.sha,
             headSha: pull_request?.head?.sha,
             changedFiles: pull_request?.changed_files ?? 0,

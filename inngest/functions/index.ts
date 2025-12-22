@@ -1,7 +1,5 @@
 import { inngest } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
-import { aiOrchestrator } from "@/lib/ai/orchestrator";
-import { Octokit } from "@octokit/rest";
 import { getRepoFileContents } from "@/lib/github-utils";
 import { indexCodebase, retrieveContext } from "@/lib/ai/lib/rag";
 import {
