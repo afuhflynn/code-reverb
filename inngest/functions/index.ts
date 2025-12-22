@@ -10,6 +10,8 @@ import {
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { getOctokitForInstallation } from "@/config/octokit-instance";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -342,7 +344,10 @@ export const summarizePr = inngest.createFunction(
     }
 
     const installationId = await step.run("get-installation-id", async () => {
-      return await getGithubInstallationId();
+      const session = await auth.api.getSession({ headers: await headers() });
+
+      if (!session) throw new Error("Unauthorized");
+      return await getGithubInstallationId({ userId: session.user.id });
     });
     // Get GitHub App installation token
     const octokit = await step.run("get-installation-token", async () => {
@@ -585,8 +590,13 @@ Use this checklist, marking items that cannot be verified as **INSUFFICIENT CONT
       return text;
     });
 
+    const installationId = await step.run("get-installation-id", async () => {
+      const session = await auth.api.getSession({ headers: await headers() });
+
+      if (!session) throw new Error("Unauthorized");
+      return await getGithubInstallationId({ userId: session.user.id });
+    });
     await step.run("post-comment", async () => {
-      const installationId = await getGithubInstallationId();
       await postReviewComment(installationId, owner, repo, prNumber, review);
     });
 
