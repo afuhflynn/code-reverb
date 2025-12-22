@@ -128,7 +128,10 @@ export async function POST(request: NextRequest) {
         reviewPullRequest(owner, repoName, prNumber)
           .then(() => console.log(`Review completed for: ${repo} #${prNumber}`))
           .catch((error) =>
-            console.error(`Review failed for: ${repo} #${prNumber}: `, error)
+            console.error(
+              `Review failed for repo: ${repo} #${prNumber}: `,
+              error
+            )
           );
       }
     }
