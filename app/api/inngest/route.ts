@@ -4,6 +4,8 @@ import {
   generateReview,
   handleAppDeletion,
   handleAppInstallation,
+  handleInstallationSuspended,
+  handleInstallationUnsuspended,
   indexRepo,
 } from "@/inngest/functions";
 
@@ -14,5 +16,7 @@ export const { GET, POST, PUT } = serve({
     generateReview,
     handleAppInstallation,
     handleAppDeletion,
+    handleInstallationSuspended,
+    handleInstallationUnsuspended,
   ],
 });

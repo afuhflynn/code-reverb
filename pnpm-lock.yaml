@@ -38,6 +38,9 @@ importers:
       '@octokit/rest':
         specifier: ^21.0.0
         version: 21.1.1
+      '@octokit/webhooks':
+        specifier: ^14.2.0
+        version: 14.2.0
       '@pinecone-database/pinecone':
         specifier: ^4.0.0
         version: 4.1.0

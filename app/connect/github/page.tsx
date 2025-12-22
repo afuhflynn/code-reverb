@@ -20,19 +20,8 @@ export default function ConnectGitHubPage() {
     const installUrl = process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL;
     if (installUrl) {
       setIsInstalling(true);
-      window.open(installUrl, "_blank");
-      // Call API to complete onboarding
-      try {
-        await fetch("/api/complete-onboarding", { method: "POST" });
-      } catch (error) {
-        console.error("Error completing onboarding:", error);
-      }
-      router.push("/app");
+      window.open(installUrl, "_self");
     }
-  };
-
-  const handleSkip = () => {
-    router.push("/app");
   };
 
   return (
@@ -114,9 +103,6 @@ export default function ConnectGitHubPage() {
                 {isInstalling
                   ? "Opening GitHub..."
                   : "Install CodeReverb GitHub App"}
-              </Button>
-              <Button variant="outline" onClick={handleSkip} className="w-full">
-                Skip for now
               </Button>
             </div>
 

@@ -56,9 +56,10 @@ model Installation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  installationId  String @unique
-  githubAccountId String @unique
-  githubUserId    String @unique
+  installationId  Int     @unique
+  githubAccountId Int     @unique
+  githubUserId    Int     @unique
+  isActive        Boolean @default(true)
 
   @@index([installationId, githubAccountId, githubUserId])
   @@map("installation")

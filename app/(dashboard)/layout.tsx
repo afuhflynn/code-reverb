@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { api } from "@/lib/api-client";
 import { requireAuth } from "@/lib/auth-utils";
+import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
@@ -12,7 +13,11 @@ export default async function DashboardLayout({
 }) {
   const session = await requireAuth("/app");
 
-  const user = await api.queries.users.getById(session.user.id);
+  const user = await prisma.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+  });
 
   // Check if user has completed onboarding
   if (!user?.hasCompletedOnboarding) {

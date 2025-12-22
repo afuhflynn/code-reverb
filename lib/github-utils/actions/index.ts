@@ -4,9 +4,10 @@ import { fetchUserGithubContributions, getGithubToken } from "..";
 
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { Octokit } from "octokit";
+import { App, Octokit } from "octokit";
 import { prisma } from "@/lib/prisma";
 import { months } from "@/constants";
+import { getOctokitForInstallation } from "@/config/octokit-instance";
 
 interface DailyActivity {
   date: string;
@@ -232,14 +233,31 @@ export async function getPullRequestDiff(
   };
 }
 
+export async function getGithubInstallationId() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) throw new Error("Unauthorized");
+
+  const installation = await prisma.installation.findFirst({
+    where: { userId: session.user.id },
+    select: {
+      installationId: true,
+    },
+  });
+
+  if (!installation) throw new Error("No github accecss token found!");
+
+  return installation.installationId;
+}
+
 export async function postReviewComment(
-  token: string,
+  installationId: number,
   owner: string,
   repo: string,
   prNumber: number,
   review: string
 ) {
-  const octokit = new Octokit({ auth: token });
+  const octokit = await getOctokitForInstallation(installationId);
   await octokit.rest.issues.createComment({
     owner,
     repo,
