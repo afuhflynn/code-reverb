@@ -233,9 +233,13 @@ export async function getPullRequestDiff(
   };
 }
 
-export async function getGithubInstallationId({ userId }: { userId: string }) {
+export async function getGithubInstallationId() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) throw new Error("Unauthorized");
+
   const installation = await prisma.installation.findFirst({
-    where: { userId },
+    where: { userId: session.user.id },
     select: {
       installationId: true,
     },

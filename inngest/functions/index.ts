@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { getRepoFileContents } from "@/lib/github-utils";
 import { indexCodebase, retrieveContext } from "@/lib/ai/lib/rag";
 import {
-  getGithubInstallationId,
   getPullRequestDiff,
   postReviewComment,
 } from "@/lib/github-utils/actions";
@@ -336,19 +335,13 @@ export const summarizePr = inngest.createFunction(
       changedFiles,
       additions,
       deletions,
+      installationId,
     } = event.data;
 
     // No summary for too many files changed
     if (changedFiles > 50) {
       throw new Error("Too many files changed");
     }
-
-    const installationId = await step.run("get-installation-id", async () => {
-      const session = await auth.api.getSession({ headers: await headers() });
-
-      if (!session) throw new Error("Unauthorized");
-      return await getGithubInstallationId({ userId: session.user.id });
-    });
     // Get GitHub App installation token
     const octokit = await step.run("get-installation-token", async () => {
       return await getOctokitForInstallation(installationId);
@@ -432,7 +425,7 @@ export const generateReview = inngest.createFunction(
   { event: "pr.review.requested" },
 
   async ({ event, step }) => {
-    const { owner, repo, prNumber, userId, runId } = event.data;
+    const { owner, repo, prNumber, userId, runId, installationId } = event.data;
 
     // Update run status to running
     await step.run("update-run-status", async () => {
@@ -590,12 +583,6 @@ Use this checklist, marking items that cannot be verified as **INSUFFICIENT CONT
       return text;
     });
 
-    const installationId = await step.run("get-installation-id", async () => {
-      const session = await auth.api.getSession({ headers: await headers() });
-
-      if (!session) throw new Error("Unauthorized");
-      return await getGithubInstallationId({ userId: session.user.id });
-    });
     await step.run("post-comment", async () => {
       await postReviewComment(installationId, owner, repo, prNumber, review);
     });
