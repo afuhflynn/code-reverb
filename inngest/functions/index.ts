@@ -5,12 +5,13 @@ import { Octokit } from "@octokit/rest";
 import { getRepoFileContents } from "@/lib/github-utils";
 import { indexCodebase, retrieveContext } from "@/lib/ai/lib/rag";
 import {
+  getGithubInstallationId,
   getPullRequestDiff,
   postReviewComment,
 } from "@/lib/github-utils/actions";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
-import { blackForestLabs } from "@ai-sdk/black-forest-labs";
+import { getOctokitForInstallation } from "@/config/octokit-instance";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -36,15 +37,24 @@ export const commentPost = inngest.createFunction(
       });
     });
 
+    const installationId = await step.run("get-installation-id", async () => {
+      return await (prisma as any).installation.findFirst({
+        where: {
+          userId: run.userId,
+        },
+        select: {
+          installationId: true,
+        },
+      });
+    });
+
     // Post comments to GitHub
     await step.run("post-comments", async () => {
-      const octokit = new Octokit({
-        auth: process.env.GITHUB_TOKEN, // Would need user-specific tokens
-      });
+      const octokit = await getOctokitForInstallation(installationId);
 
       for (const comment of comments) {
         try {
-          await octokit.pulls.createReviewComment({
+          await octokit.rest.pulls.createReviewComment({
             owner: run.pr.repo.fullName.split("/")[0],
             repo: run.pr.repo.fullName.split("/")[1],
             pull_number: run.pr.number,
@@ -60,7 +70,7 @@ export const commentPost = inngest.createFunction(
     });
 
     return { success: true, commentCount: comments.length };
-  },
+  }
 );
 
 // Repo indexing Worker (Embed to pinecone)
@@ -95,11 +105,325 @@ export const indexRepo = inngest.createFunction(
     });
 
     return { success: true, indexedFiles: files.length };
+  }
+);
+
+// Handle app installation
+export const handleAppInstallation = inngest.createFunction(
+  {
+    id: "app-installation-created",
   },
+  {
+    event: "installation.created",
+  },
+  async ({ event, step }) => {
+    const { installationId, accountId, login, userId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("save-app-installation-user-info", async () => {
+      const installation = await prisma.installation.upsert({
+        where: {
+          userId: account.user.id,
+        },
+        create: {
+          accountId: account.id,
+          userId: account.user.id,
+          installationId,
+          githubAccountId: accountId,
+          githubUserId: userId,
+        },
+        update: {
+          installationId,
+          githubAccountId: accountId,
+          githubUserId: userId,
+        },
+      });
+
+      if (!installation) {
+        throw new Error("Failed to save app installation data");
+      }
+
+      await prisma.user.update({
+        where: { id: account.user.id },
+        data: { username: login, hasCompletedOnboarding: true },
+      });
+
+      return { success: true };
+    });
+
+    return { success: true };
+  }
+);
+
+// Handle app deletion
+export const handleAppDeletion = inngest.createFunction(
+  {
+    id: "app-installation-deleted",
+  },
+  { event: "installation.deleted" },
+  async ({ event, step }) => {
+    const { installationId, accountId, userId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("delete-installation", async () => {
+      const installation = await prisma.installation.delete({
+        where: {
+          githubAccountId: accountId,
+          githubUserId: userId,
+          installationId,
+        },
+      });
+
+      if (!installation) throw new Error("Installation not found");
+      await prisma.user.update({
+        where: { id: account.user.id },
+        data: { hasCompletedOnboarding: false },
+      });
+      return { success: true };
+    });
+
+    return { sucess: true };
+  }
+);
+
+// Handle app suspend
+export const handleInstallationSuspended = inngest.createFunction(
+  {
+    id: "app-installation-suspended",
+  },
+  {
+    event: "installation.suspend",
+  },
+  async ({ event, step }) => {
+    const { installationId, accountId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("mark-installation-suspended", async () => {
+      const [updatedInstallation, updatedUser] = await prisma.$transaction([
+        prisma.installation.update({
+          where: {
+            installationId,
+          },
+          data: {
+            isActive: false,
+          },
+        }),
+        prisma.user.update({
+          where: { id: account.user.id },
+          data: { hasCompletedOnboarding: false },
+        }),
+      ]);
+
+      if (!updatedInstallation || !updatedUser) {
+        throw new Error("Failed to suspend installation");
+      }
+
+      return { success: true };
+    });
+
+    return { success: true };
+  }
+);
+
+// Handle app unsuspend
+export const handleInstallationUnsuspended = inngest.createFunction(
+  {
+    id: "app-installation-unsuspended",
+  },
+  {
+    event: "installation.unsuspend",
+  },
+  async ({ event, step }) => {
+    const { installationId, accountId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("mark-installation-active", async () => {
+      const [updatedInstallation, updatedUser] = await prisma.$transaction([
+        prisma.installation.update({
+          where: {
+            installationId,
+          },
+          data: {
+            isActive: true,
+          },
+        }),
+        prisma.user.update({
+          where: { id: account.user.id },
+          data: { hasCompletedOnboarding: true },
+        }),
+      ]);
+
+      if (!updatedInstallation || !updatedUser) {
+        throw new Error("Failed to suspend installation");
+      }
+
+      return { success: true };
+    });
+
+    return { success: true };
+  }
+);
+
+// AI PR Summary Worker
+export const summarizePr = inngest.createFunction(
+  { id: "summarize-pr", concurrency: 20 },
+  { event: "pr.summary.requested" },
+
+  async ({ event, step }) => {
+    const {
+      owner,
+      repo,
+      prNumber,
+      title,
+      description,
+      userId,
+      changedFiles,
+      additions,
+      deletions,
+    } = event.data;
+
+    // No summary for too many files changed
+    if (changedFiles > 50) {
+      throw new Error("Too many files changed");
+    }
+
+    const installationId = await step.run("get-installation-id", async () => {
+      return await getGithubInstallationId();
+    });
+    // Get GitHub App installation token
+    const octokit = await step.run("get-installation-token", async () => {
+      return await getOctokitForInstallation(installationId);
+    });
+
+    const { diff } = await step.run("fetch-pr-diff", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          userId: userId,
+          providerId: "github",
+        },
+      });
+
+      if (!account?.accessToken) {
+        throw new Error("No GitHub access token found");
+      }
+
+      const data = await getPullRequestDiff(
+        account.accessToken,
+        owner,
+        repo,
+        prNumber
+      );
+      return { ...data };
+    });
+
+    const summary = await step.run("generate-pr-summary", async () => {
+      const prompt = `You are a senior engineer. Write a concise summary of this pull request for teammates scanning notifications.
+
+Rules:
+- 2–4 bullet points.
+- No implementation details, just what and why at a high level.
+- If the description is empty or unclear, say that explicitly.
+- Do not invent features or files.
+
+PR Title: ${title}
+PR Description:
+${description || "No description provided."}
+`;
+      // Prepare context for AI
+      const context = {
+        title,
+        description: description || "No description provided",
+        stats: {
+          changedFiles,
+          additions,
+          deletions,
+        },
+        diff,
+      };
+
+      const { text } = await generateText({
+        model: google("gemini-2.5-flash"),
+        system: prompt,
+        prompt: `Here is the diff context for this PR: ${context}.
+        Please generate a summary of the changes in this PR.
+        Generate the summary description according to the PR.
+        `,
+      });
+
+      return text;
+    });
+
+    await step.run("post-summary-comment", async () => {
+      await postReviewComment(
+        installationId, // or installation/user token, see your existing code
+        owner,
+        repo,
+        prNumber,
+        summary
+      );
+    });
+
+    return { success: true };
+  }
 );
 
 // Ai code review Worker
-
 export const generateReview = inngest.createFunction(
   { id: "generate-review", concurrency: 5 },
   { event: "pr.review.requested" },
@@ -115,7 +439,7 @@ export const generateReview = inngest.createFunction(
       });
     });
 
-    const { diff, title, description, token } = await step.run(
+    const { diff, title, description } = await step.run(
       "fetch-pr-data",
       async () => {
         const account = await prisma.account.findFirst({
@@ -133,10 +457,10 @@ export const generateReview = inngest.createFunction(
           account.accessToken,
           owner,
           repo,
-          prNumber,
+          prNumber
         );
-        return { ...data, token: account.accessToken };
-      },
+        return { ...data };
+      }
     );
 
     const context = await step.run("retrieve-context", async () => {
@@ -146,25 +470,21 @@ export const generateReview = inngest.createFunction(
     });
 
     const review = await step.run("generate-ai-review", async () => {
-      const prompt = `You are a senior software engineer conducting a professional code review. Analyze this pull request with technical precision and provide actionable feedback.
+      const prompt = `You are a senior software engineer conducting a professional code review for this specific repository. Analyze this pull request with technical precision and provide concise, actionable feedback.
 
-# CRITICAL INSTRUCTIONS - ANTI-HALLUCINATION PROTOCOL
-(Strict: follow these exactly)
+# CRITICAL INSTRUCTIONS – ANTI-HALLUCINATION PROTOCOL (MUST FOLLOW)
 
-1. **ONLY analyze code visible in the provided diff.**
-2. **NEVER invent file paths, function names, or code structures.**
-3. **State uncertainty explicitly** — if context is insufficient, mark as INSUFFICIENT CONTEXT.
-4. **DO NOT suggest changes for files not shown in the diff.**
-5. **Verify line numbers match the actual diff before suggesting changes.** If they don't, label as LOW CONFIDENCE and ask for corrected diffs.
-6. **Flag items requiring manual review** when context is incomplete. Use the "Manual review required" tag.
-7. **When in doubt, request additional context instead of guessing.**
+1. ONLY analyze code visible in the provided diff.
+2. NEVER invent file paths, function names, modules, or behavior.
+3. If context is missing, explicitly write **INSUFFICIENT CONTEXT** and avoid guessing.
+4. Do NOT suggest changes for files not shown in the diff.
+5. If you are unsure about line numbers or impact, mark the item as **LOW CONFIDENCE** and say why.
+6. Prefer fewer, high-quality findings over many speculative ones.
 
-## Self-Verification Checklist ✅
-Before finishing the review, confirm:
+Before you finish, mentally check:
 - No invented files/functions/lines are referenced.
-- All line numbers correspond to the diff.
-- All assumptions are labeled with CONFIDENCE level.
-If any check fails, mark findings as **INSUFFICIENT CONTEXT** and stop.
+- All assumptions are clearly labeled with a confidence level.
+If any of these fail, downgrade confidence and/or mark as **INSUFFICIENT CONTEXT**.
 
 ---
 
@@ -182,158 +502,83 @@ ${diff}
 
 ---
 
-# Review Output Format (strict)
-Use Markdown. Keep each top-level section short and scannable. Use the exact headings below.
+# Review Output Format (STRICT)
+Use Markdown. Be concise. For small/simple PRs, keep sections brief.
 
-## Walkthrough 🔎
-Provide a short table summarizing cohorts/files and a one-line summary each.
-
-| Cohort / File(s) | Change Summary |
-|---|---|
-| **Category Name** | One-line summary of changes |
-| \`path/to/file1.ts\` | Short, technical impact statement |
-| \`path/to/file2.tsx\` | Short, technical impact statement |
-
-> **Note:** If a file in this table is not present in the diff, remove it and mark the entry as **INSUFFICIENT CONTEXT**.
+## Summary
+- 1–3 short bullets summarizing the overall change.
+- Mention risk level (low/medium/high) and main affected area(s).
 
 ---
 
 ## Changes (per file)
-For each changed file produce a section:
+Create **one section per changed file** using this exact heading format so it can be parsed:
 
-### File: \`path/to/file.ext\` ⚙️
-**Purpose**: 1–2 lines about file role.
+### File: \`path/to/file.ext\`
 
-**Modifications**:
-- **Line(s)**: e.g. \`12-24\`
-- **What changed**: one sentence
-- **Why**: brief rationale
-- **Impact**: bullet list of immediate risks/consumers
+For each file:
+- **Purpose**: 1–2 lines describing this file's role (or **INSUFFICIENT CONTEXT**).
+- **Key modifications** (bullet list, max 3 bullets):
+  - Line(s): \`start-end\` — what changed and why it likely changed.
+- **Impact**: bullet list of immediate risks/consumers (or "Minimal impact" if trivial).
+- **Confidence**: **HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT** — 1 short justification.
 
-**Technical Details**:
-<details>
-<summary>Expand for deep analysis</summary>
-
-- Design patterns used
-- Potential side effects
-- Dependencies affected
-- Edge cases and boundary conditions
-- Performance characteristics
-
-</details>
-
-**Confidence**: **HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT**  — choose one and justify with 1 short sentence.
+If you have no meaningful feedback for a file, still create the section and say "No issues found in this diff (Confidence: HIGH)".
 
 ---
 
 ## Critical Issues (sorted by severity)
-Use short badges and emojis only for clarity. Keep each issue compact.
+Only include issues that materially affect correctness, security, performance, or maintainability.
 
-### 🔥 SEVERITY: HIGH | CONFIDENCE: HIGH
-**Location**: \`path/to/file:line-start-line-end\`
-**Issue**: One-line title.
-**Evidence**: paste the *exact* snippet from the diff (do not paraphrase).
-**Analysis**: 2–3 short bullets.
-**Recommended Fix**: code diff (if trivial) and a 1-line rationale.
-**AI Auto-Fix Prompt**: *Only include this if CONFIDENCE is HIGH and the fix is unambiguous.*
+For each issue:
+- **Severity**: HIGH / MEDIUM / LOW
+- **Confidence**: HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT
+- **Location**: \`path/to/file:line-start-line-end\`
+- **Issue**: one-line title.
+- **Evidence**: paste the exact snippet from the diff (do not paraphrase).
+- **Analysis**: 1–3 short bullets.
+- **Suggested fix**: short description or minimal code snippet.
 
----
-
-### ⚠️ SEVERITY: MEDIUM | CONFIDENCE: MEDIUM
-(Structure same as above — be conservative with automated fixes)
-
----
-
-### ℹ️ SEVERITY: LOW | CONFIDENCE: LOW
-(Quick suggestions or stylistic notes)
+Keep this section empty if there are no real issues; do NOT invent nitpicks just to fill it.
 
 ---
 
 ## Suggestions (quality, security, testing)
-Group suggestions by theme. For each suggestion:
-- **Confidence**: HIGH/MEDIUM/LOW
-- **Action**: copy-pastable code or checklist
-- **Why**: one sentence benefit
+Group high-value suggestions only. For each suggestion:
+- **Type**: quality / security / testing / style
+- **Confidence**: HIGH / MEDIUM / LOW
+- **Action**: concrete, copy-pastable code or a very short checklist.
+- **Why**: one short sentence describing the benefit.
+
+Avoid generic style advice unless the diff clearly violates existing patterns.
 
 ---
 
-## Estimated Code Review Effort 🕒
-**Complexity**: [Simple / Moderate / Complex]
-**Estimated Time**: 🕒 **~X minutes**
-**Justification**:
-- Reason 1 (lines changed, #files)
-- Reason 2 (new modules / public APIs)
-- Reason 3 (tests required / integration risk)
-
-Use the time emoji (🕒) and one extra emoji max to highlight the complexity. Do not use emojis in code or file paths.
+## Tests & Verification
+- **Tests added/modified?** yes/no (based on the diff only).
+- **Recommended tests**: 2–5 bullets with specific scenarios or functions to cover.
+- **Confidence**: HIGH / MEDIUM / LOW.
 
 ---
 
-## Architecture & Flow Analysis 🧭
-**Only produce this if the diff contains cross-layer interactions (API → Service → DB).** If not, write: **INSUFFICIENT CONTEXT to generate architecture diagrams.**
-
-If generated, include a small mermaid diagram and a 2–3 sentence flow description.
-
----
-
-## Tests & Coverage 🧪
-- Tests added/modified? yes/no
-- Suggested unit/integration tests (short bullets)
-- Confidence
-
----
-
-## Pre-merge Checklist ✅
-- [ ] Resolve HIGH severity issues
-- [ ] Add unit tests for modified logic
-- [ ] Verify type safety for nullable properties
-- [ ] Run full test suite (CI green)
-
-Mark items that cannot be verified as **INSUFFICIENT CONTEXT**.
-
----
-
-## Related PRs / Cross-References 📌
-List only PRs explicitly mentioned in the diff or PR description. Do not invent.
+## Pre-merge Checklist
+Use this checklist, marking items that cannot be verified as **INSUFFICIENT CONTEXT**:
+- [ ] All HIGH severity issues addressed or explicitly accepted.
+- [ ] Appropriate unit tests exist or are added for changed logic.
+- [ ] Risky paths (auth, payments, persistence, concurrency) manually reviewed.
+- [ ] CI/test suite passes.
 
 ---
 
 ## Review Confidence Summary
-- **High Confidence**: list 1–3 items
-- **Medium Confidence**: list 1–3 items
-- **Insufficient Context**: list items needing manual review
-
----
-## Poem
-
-Generate a short, relevant poem about the **specific changes in this pull request**.
-
-STRICT RULES:
-- The poem MUST reference only modifications visible in the provided diff.
-- DO NOT write a generic poem. If the changes are small, keep the poem minimal.
-- DO NOT invent features, files, or behavior not shown in the diff.
-- The poem MUST be rendered inside a Markdown blockquote.
-- EVERY line of the poem MUST start with a ">" character.
-- DO NOT include any text outside the blockquote.
-- If no meaningful changes are present, generate a short reflective poem acknowledging minimal change.
-
-FORMAT (mandatory):
-
-> Line one of the poem
-> Line two of the poem
-> Line three of the poem
-
----
-
-## Finishing Notes
-- **Do not** reference files not in the diff.
-- **Do not** invent line numbers. If you do, mark them LOW CONFIDENCE and explain why.
-- Keep emoji usage minimal and professional (see emoji policy below).
+- **High confidence**: 1–3 key points you are very sure about.
+- **Medium/low confidence**: 1–3 items that depend on missing context.
+- **Items requiring manual review**: list anything that a human must double-check.
 
 ---
 
 **End of Review**
-*This review followed the Anti-Hallucination Protocol: only visible code reviewed; assumptions flagged; manual review items called out.*`;
+*This review followed the Anti-Hallucination Protocol: only visible diff analyzed; assumptions labeled; speculative items minimized.*`;
       const { text } = await generateText({
         model: google("gemini-2.5-flash"),
         prompt,
@@ -343,7 +588,8 @@ FORMAT (mandatory):
     });
 
     await step.run("post-comment", async () => {
-      await postReviewComment(token, owner, repo, prNumber, review);
+      const installationId = await getGithubInstallationId();
+      await postReviewComment(installationId, owner, repo, prNumber, review);
     });
 
     await step.run("save-review-result", async () => {
@@ -413,5 +659,5 @@ FORMAT (mandatory):
       }
     });
     return { success: true };
-  },
+  }
 );

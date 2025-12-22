@@ -81,6 +81,8 @@ export const api = {
         apiRequest("/settings/billing", { method: "GET" }),
       getSessions: (): Promise<any[] | null> =>
         apiRequest("/settings/sessions", { method: "GET" }),
+      getRepositories: (): Promise<any[] | null> =>
+        apiRequest("/settings/repositories", { method: "GET" }),
     },
     reviews: {
       getMany: (queryString?: string): Promise<any> =>
@@ -135,6 +137,10 @@ export const api = {
         apiRequest(`/settings/sessions/${sessionId}`, { method: "DELETE" }),
       revokeAllSessions: (): Promise<any> =>
         apiRequest("/settings/sessions", { method: "DELETE" }),
+      disconnectRepository: (id: string): Promise<any> =>
+        apiRequest(`/settings/repositories/${id}`, { method: "DELETE" }),
+      disconnectAllRepositories: (): Promise<any> =>
+        apiRequest("/settings/repositories", { method: "DELETE" }),
     },
     reviews: {
       create: (data: any): Promise<any> =>
