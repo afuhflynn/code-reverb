@@ -331,7 +331,7 @@ export const summarizePr = inngest.createFunction(
       prNumber,
       title,
       description,
-      userId,
+      accountId,
       changedFiles,
       additions,
       deletions,
@@ -342,15 +342,11 @@ export const summarizePr = inngest.createFunction(
     if (changedFiles > 50) {
       throw new Error("Too many files changed");
     }
-    // Get GitHub App installation token
-    const octokit = await step.run("get-installation-token", async () => {
-      return await getOctokitForInstallation(installationId);
-    });
 
     const { diff } = await step.run("fetch-pr-diff", async () => {
       const account = await prisma.account.findFirst({
         where: {
-          userId: userId,
+          accountId,
           providerId: "github",
         },
       });
@@ -369,37 +365,36 @@ export const summarizePr = inngest.createFunction(
     });
 
     const summary = await step.run("generate-pr-summary", async () => {
-      const prompt = `You are a senior engineer. Write a concise summary of this pull request for teammates scanning notifications.
+      const prompt = `You are a senior engineer reviewing pull requests. Analyze the code diff and write a concise summary for teammates scanning notifications.
 
 Rules:
-- 2–4 bullet points.
-- No implementation details, just what and why at a high level.
-- If the description is empty or unclear, say that explicitly.
-- Do not invent features or files.
+- 2–4 bullet points maximum
+- Focus on WHAT changed and WHY (infer from code context)
+- Use the diff as your primary source of truth
+- If PR description exists, use it for additional context
+- Be specific about files, functions, or logic that changed
+- No generic statements like "updates functions" - explain what actually changed
 
-PR Title: ${title}
-PR Description:
-${description || "No description provided."}
-`;
-      // Prepare context for AI
-      const context = {
-        title,
-        description: description || "No description provided",
-        stats: {
-          changedFiles,
-          additions,
-          deletions,
-        },
-        diff,
-      };
+Output format: Plain bullet points, no markdown formatting.`;
+
+      const userPrompt = `PR Title: ${title}
+
+PR Description: ${description || "No description provided"}
+
+Stats:
+- Files changed: ${changedFiles}
+- Additions: +${additions}
+- Deletions: -${deletions}
+
+Code Diff:
+${diff}
+
+Generate a technical summary based primarily on the code changes above.`;
 
       const { text } = await generateText({
         model: google("gemini-2.5-flash"),
         system: prompt,
-        prompt: `Here is the diff context for this PR: ${context}.
-        Please generate a summary of the changes in this PR.
-        Generate the summary description according to the PR.
-        `,
+        prompt: userPrompt,
       });
 
       return text;

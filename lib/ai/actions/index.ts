@@ -135,3 +135,45 @@ export async function reviewPullRequest(
     }
   }
 }
+
+export async function generatePullRequestSummary(
+  owner: string,
+  repoName: string,
+  prNumber: number,
+  title: string,
+  description: string,
+  accountId: number,
+  installationId: number,
+  baseSha: string,
+  headSha: string,
+  changedFiles: number,
+  additions: number,
+  deletions: number
+) {
+  try {
+    await inngest.send({
+      name: "pr.summary.requested",
+      data: {
+        owner,
+        repo: repoName,
+        prNumber,
+        title: title ?? "",
+        description: description ?? "",
+        accountId,
+        installationId: installationId ?? null,
+        baseSha,
+        headSha,
+        changedFiles: changedFiles ?? 0,
+        additions: additions ?? 0,
+        deletions: deletions ?? 0,
+      },
+    });
+
+    return {
+      sucess: true,
+      message: "PR Summary Queued",
+    };
+  } catch (error) {
+    console.error("Failed to post PR Summary ", error);
+  }
+}
