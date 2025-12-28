@@ -7,6 +7,7 @@ import {
   handleInstallationSuspended,
   handleInstallationUnsuspended,
   indexRepo,
+  summarizePr,
 } from "@/inngest/functions";
 
 export const { GET, POST, PUT } = serve({
@@ -18,5 +19,6 @@ export const { GET, POST, PUT } = serve({
     handleAppDeletion,
     handleInstallationSuspended,
     handleInstallationUnsuspended,
+    summarizePr,
   ],
 });

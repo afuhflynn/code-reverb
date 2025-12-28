@@ -18,6 +18,7 @@ export default function ConnectGitHubPage() {
 
   const handleInstallApp = async () => {
     const installUrl = process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL;
+    console.log({ installUrl });
     if (installUrl) {
       setIsInstalling(true);
       window.open(installUrl, "_self");

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { reviewPullRequest } from "@/lib/ai/actions";
+import {
+  generatePullRequestSummary,
+  reviewPullRequest,
+} from "@/lib/ai/actions";
 import { inngest } from "@/lib/inngest";
 
 import { Webhooks } from "@octokit/webhooks";
@@ -104,31 +107,41 @@ export async function POST(request: NextRequest) {
       } = body;
 
       const [owner, repoName] = repo?.split("/");
-
+      // trigger pr summary immediately after
+      if (action === "opened") {
+        await generatePullRequestSummary(
+          owner,
+          repo,
+          prNumber,
+          pull_request?.title,
+          pull_request?.body,
+          body?.account.id,
+          body?.installation?.id,
+          pull_request?.base?.sha,
+          pull_request?.head?.sha,
+          pull_request?.changed_files,
+          pull_request?.additions,
+          pull_request?.deletions
+        )
+          .then(() =>
+            console.log(`Summary completed for: ${repo} #${prNumber}`)
+          )
+          .catch((error) =>
+            console.error(
+              `Summarization failed for repo: ${repo} #${prNumber}: `,
+              error
+            )
+          );
+      }
       // Trigger AI review when PR is opened or updated
       if (action === "opened" || action === "synchronized") {
-        // IMPROVED: Send event with flag to fetch diff for better summary
-        await inngest.send({
-          name: "pr.summary.requested",
-          data: {
-            owner,
-            repo: repoName,
-            prNumber,
-            title: pull_request?.title ?? "",
-            description: pull_request?.body ?? "",
-            userId: owner,
-            installationId: body?.installation?.id ?? null,
-            baseSha: pull_request?.base?.sha,
-            headSha: pull_request?.head?.sha,
-            changedFiles: pull_request?.changed_files ?? 0,
-            additions: pull_request?.additions ?? 0,
-            deletions: pull_request?.deletions ?? 0,
-          },
-        });
-        reviewPullRequest(owner, repoName, prNumber)
+        await reviewPullRequest(owner, repoName, prNumber)
           .then(() => console.log(`Review completed for: ${repo} #${prNumber}`))
           .catch((error) =>
-            console.error(`Review failed for: ${repo} #${prNumber}: `, error)
+            console.error(
+              `Review failed for repo: ${repo} #${prNumber}: `,
+              error
+            )
           );
       }
     }
