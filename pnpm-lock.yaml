@@ -35,6 +35,9 @@ importers:
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      '@octokit/auth-app':
+        specifier: ^8.1.2
+        version: 8.1.2
       '@octokit/rest':
         specifier: ^21.0.0
         version: 21.1.1
