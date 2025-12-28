@@ -8,8 +8,8 @@ import { Octokit } from "octokit";
  */
 
 export function getOctokitForInstallation(installationId: number) {
-  if (!process.env.GITHUB_APP_ID || !process.env.GITHUB_PRIVATE_KEY) {
-    throw new Error("GITHUB_APP_ID or GITHUB_PRIVATE_KEY missing");
+  if (!process.env.GITHUB_APP_ID || !process.env.GITHUB_APP_PRIVATE_KEY) {
+    throw new Error("GITHUB_APP_ID or GITHUB_APP_PRIVATE_KEY missing");
   }
 
   // Octokit will exchange the app JWT for an installation access token automatically
