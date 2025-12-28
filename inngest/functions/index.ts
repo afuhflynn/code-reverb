@@ -1,15 +1,15 @@
 import { inngest } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
-import { aiOrchestrator } from "@/lib/ai/orchestrator";
-import { Octokit } from "@octokit/rest";
 import { getRepoFileContents } from "@/lib/github-utils";
 import { indexCodebase, retrieveContext } from "@/lib/ai/lib/rag";
 import {
+  getGithubInstallationId,
   getPullRequestDiff,
   postReviewComment,
 } from "@/lib/github-utils/actions";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
+import { getOctokitForInstallation } from "@/config/octokit-instance";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -35,15 +35,24 @@ export const commentPost = inngest.createFunction(
       });
     });
 
+    const installationId = await step.run("get-installation-id", async () => {
+      return await (prisma as any).installation.findFirst({
+        where: {
+          userId: run.userId,
+        },
+        select: {
+          installationId: true,
+        },
+      });
+    });
+
     // Post comments to GitHub
     await step.run("post-comments", async () => {
-      const octokit = new Octokit({
-        auth: process.env.GITHUB_TOKEN, // Would need user-specific tokens
-      });
+      const octokit = await getOctokitForInstallation(installationId);
 
       for (const comment of comments) {
         try {
-          await octokit.pulls.createReviewComment({
+          await octokit.rest.pulls.createReviewComment({
             owner: run.pr.repo.fullName.split("/")[0],
             repo: run.pr.repo.fullName.split("/")[1],
             pull_number: run.pr.number,
@@ -97,14 +106,269 @@ export const indexRepo = inngest.createFunction(
   }
 );
 
+// Handle app installation
+export const handleAppInstallation = inngest.createFunction(
+  {
+    id: "app-installation-created",
+  },
+  {
+    event: "installation.created",
+  },
+  async ({ event, step }) => {
+    const { installationId, accountId, login, userId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("save-app-installation-user-info", async () => {
+      const installation = await prisma.installation.upsert({
+        where: {
+          userId: account.user.id,
+        },
+        create: {
+          accountId: account.id,
+          userId: account.user.id,
+          installationId,
+          githubAccountId: accountId,
+          githubUserId: userId,
+        },
+        update: {
+          installationId,
+          githubAccountId: accountId,
+          githubUserId: userId,
+        },
+      });
+
+      if (!installation) {
+        throw new Error("Failed to save app installation data");
+      }
+
+      await prisma.user.update({
+        where: { id: account.user.id },
+        data: { username: login, hasCompletedOnboarding: true },
+      });
+
+      return { success: true };
+    });
+
+    return { success: true };
+  }
+);
+
+// Handle app deletion
+export const handleAppDeletion = inngest.createFunction(
+  {
+    id: "app-installation-deleted",
+  },
+  { event: "installation.deleted" },
+  async ({ event, step }) => {
+    const { installationId, accountId, userId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("delete-installation", async () => {
+      const installation = await prisma.installation.delete({
+        where: {
+          githubAccountId: accountId,
+          githubUserId: userId,
+          installationId,
+        },
+      });
+
+      if (!installation) throw new Error("Installation not found");
+      await prisma.user.update({
+        where: { id: account.user.id },
+        data: { hasCompletedOnboarding: false },
+      });
+      return { success: true };
+    });
+
+    return { sucess: true };
+  }
+);
+
+// Handle app suspend
+export const handleInstallationSuspended = inngest.createFunction(
+  {
+    id: "app-installation-suspended",
+  },
+  {
+    event: "installation.suspend",
+  },
+  async ({ event, step }) => {
+    const { installationId, accountId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("mark-installation-suspended", async () => {
+      const [updatedInstallation, updatedUser] = await prisma.$transaction([
+        prisma.installation.update({
+          where: {
+            installationId,
+          },
+          data: {
+            isActive: false,
+          },
+        }),
+        prisma.user.update({
+          where: { id: account.user.id },
+          data: { hasCompletedOnboarding: false },
+        }),
+      ]);
+
+      if (!updatedInstallation || !updatedUser) {
+        throw new Error("Failed to suspend installation");
+      }
+
+      return { success: true };
+    });
+
+    return { success: true };
+  }
+);
+
+// Handle app unsuspend
+export const handleInstallationUnsuspended = inngest.createFunction(
+  {
+    id: "app-installation-unsuspended",
+  },
+  {
+    event: "installation.unsuspend",
+  },
+  async ({ event, step }) => {
+    const { installationId, accountId } = event.data;
+    const { account } = await step.run("verify-user-identity", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          accountId: String(accountId),
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (!account) {
+        throw new Error("Invalid account");
+      }
+      return { success: true, account };
+    });
+
+    await step.run("mark-installation-active", async () => {
+      const [updatedInstallation, updatedUser] = await prisma.$transaction([
+        prisma.installation.update({
+          where: {
+            installationId,
+          },
+          data: {
+            isActive: true,
+          },
+        }),
+        prisma.user.update({
+          where: { id: account.user.id },
+          data: { hasCompletedOnboarding: true },
+        }),
+      ]);
+
+      if (!updatedInstallation || !updatedUser) {
+        throw new Error("Failed to suspend installation");
+      }
+
+      return { success: true };
+    });
+
+    return { success: true };
+  }
+);
+
 // AI PR Summary Worker
 export const summarizePr = inngest.createFunction(
   { id: "summarize-pr", concurrency: 20 },
   { event: "pr.summary.requested" },
 
   async ({ event, step }) => {
-    const { owner, repo, prNumber, title, description, installationId } =
-      event.data;
+    const {
+      owner,
+      repo,
+      prNumber,
+      title,
+      description,
+      userId,
+      changedFiles,
+      additions,
+      deletions,
+    } = event.data;
+
+    // No summary for too many files changed
+    if (changedFiles > 50) {
+      throw new Error("Too many files changed");
+    }
+
+    const installationId = await step.run("get-installation-id", async () => {
+      return await getGithubInstallationId();
+    });
+    // Get GitHub App installation token
+    const octokit = await step.run("get-installation-token", async () => {
+      return await getOctokitForInstallation(installationId);
+    });
+
+    const { diff } = await step.run("fetch-pr-diff", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          userId: userId,
+          providerId: "github",
+        },
+      });
+
+      if (!account?.accessToken) {
+        throw new Error("No GitHub access token found");
+      }
+
+      const data = await getPullRequestDiff(
+        account.accessToken,
+        owner,
+        repo,
+        prNumber
+      );
+      return { ...data };
+    });
 
     const summary = await step.run("generate-pr-summary", async () => {
       const prompt = `You are a senior engineer. Write a concise summary of this pull request for teammates scanning notifications.
@@ -119,10 +383,25 @@ PR Title: ${title}
 PR Description:
 ${description || "No description provided."}
 `;
+      // Prepare context for AI
+      const context = {
+        title,
+        description: description || "No description provided",
+        stats: {
+          changedFiles,
+          additions,
+          deletions,
+        },
+        diff,
+      };
 
       const { text } = await generateText({
         model: google("gemini-2.5-flash"),
-        prompt,
+        system: prompt,
+        prompt: `Here is the diff context for this PR: ${context}.
+        Please generate a summary of the changes in this PR.
+        Generate the summary description according to the PR.
+        `,
       });
 
       return text;
@@ -158,7 +437,7 @@ export const generateReview = inngest.createFunction(
       });
     });
 
-    const { diff, title, description, token } = await step.run(
+    const { diff, title, description } = await step.run(
       "fetch-pr-data",
       async () => {
         const account = await prisma.account.findFirst({
@@ -178,7 +457,7 @@ export const generateReview = inngest.createFunction(
           repo,
           prNumber
         );
-        return { ...data, token: account.accessToken };
+        return { ...data };
       }
     );
 
@@ -307,7 +586,8 @@ Use this checklist, marking items that cannot be verified as **INSUFFICIENT CONT
     });
 
     await step.run("post-comment", async () => {
-      await postReviewComment(token, owner, repo, prNumber, review);
+      const installationId = await getGithubInstallationId();
+      await postReviewComment(installationId, owner, repo, prNumber, review);
     });
 
     await step.run("save-review-result", async () => {

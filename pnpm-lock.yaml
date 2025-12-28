@@ -11,6 +11,9 @@ importers:
       '@ai-sdk/google':
         specifier: ^1.2.22
         version: 1.2.22(zod@4.1.13)
+      '@ai-sdk/mistral':
+        specifier: ^2.0.26
+        version: 2.0.26(zod@4.1.13)
       '@ai-sdk/openai':
         specifier: ^1.3.24
         version: 1.3.24(zod@4.1.13)
@@ -35,6 +38,9 @@ importers:
       '@octokit/rest':
         specifier: ^21.0.0
         version: 21.1.1
+      '@octokit/webhooks':
+        specifier: ^14.2.0
+        version: 14.2.0
       '@pinecone-database/pinecone':
         specifier: ^4.0.0
         version: 4.1.0
@@ -308,6 +314,12 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
+
+  '@ai-sdk/mistral@2.0.26':
+    resolution: {integrity: sha512-jxDB++4WI1wEx5ONNBI+VbkmYJOYIuS8UQY13/83UGRaiW7oB/WHiH4ETe6KzbKpQPB3XruwTJQjUMsMfKyTXA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
 
   '@ai-sdk/openai-compatible@1.0.29':
     resolution: {integrity: sha512-cZUppWzxjfpNaH1oVZ6U8yDLKKsdGbC9X0Pex8cG9CXhKWSoVLLnW1rKr6tu9jDISK5okjBIW/O1ZzfnbUrtEw==}
@@ -4704,6 +4716,12 @@ snapshots:
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.8(zod@4.1.13)
+      zod: 4.1.13
+
+  '@ai-sdk/mistral@2.0.26(zod@4.1.13)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.1.13)
       zod: 4.1.13
 
   '@ai-sdk/openai-compatible@1.0.29(zod@4.1.13)':

@@ -378,6 +378,44 @@ export function useSettingsSessions() {
   });
 }
 
+export function useSettingsRepositories() {
+  return useQuery({
+    queryKey: ["settings-repositories"],
+    queryFn: api.queries.settings.getRepositories,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+export function useDisconnectRepository() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.mutations.settings.disconnectRepository(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings-repositories"] });
+      toast.success("Repository disconnected successfully");
+    },
+    onError: () => {
+      toast.error("Failed to disconnect repository");
+    },
+  });
+}
+
+export function useDisconnectAllRepositories() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: api.mutations.settings.disconnectAllRepositories,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings-repositories"] });
+      toast.success("All repositories disconnected successfully");
+    },
+    onError: () => {
+      toast.error("Failed to disconnect repositories");
+    },
+  });
+}
+
 export function useChangePassword() {
   return useMutation({
     mutationFn: api.mutations.settings.changePassword,

@@ -58,6 +58,9 @@ import {
   useRevokeAllSessions,
   useSettingsBilling,
   useUpdateSettingsBilling,
+  useSettingsRepositories,
+  useDisconnectRepository,
+  useDisconnectAllRepositories,
 } from "@/hooks";
 
 interface SettingsContentProps {
@@ -80,6 +83,8 @@ export function SettingsContent({
   const { data: apiKeys, isLoading: apiKeysLoading } = useApiKeys();
   const { data: organization } = useOrganizationSettings();
   const { data: sessions } = useSettingsSessions();
+  const { data: repositories, isLoading: repositoriesLoading } =
+    useSettingsRepositories();
 
   // Account security hooks
   const changePassword = useChangePassword();
@@ -90,6 +95,8 @@ export function SettingsContent({
   const revokeAllSessions = useRevokeAllSessions();
   const { data: billing } = useSettingsBilling();
   const updateBilling = useUpdateSettingsBilling();
+  const disconnectRepository = useDisconnectRepository();
+  const disconnectAllRepositories = useDisconnectAllRepositories();
 
   // Mutations
   const updateProfile = useUpdateSettingsProfile();
@@ -1315,6 +1322,134 @@ export function SettingsContent({
     );
   };
 
+  const renderRepositoriesSettings = () => {
+    if (repositoriesLoading) {
+      return (
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      );
+    }
+
+    const hasRepos = repositories && repositories.length > 0;
+
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Connected Repositories</CardTitle>
+            <CardDescription>
+              Manage GitHub repositories connected to CodeReverb.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {hasRepos ? (
+              <div className="space-y-3">
+                {repositories!.map((repo: any) => (
+                  <div
+                    key={repo.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">{repo.fullName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Provider: {repo.provider || "github"}
+                      </p>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={disconnectRepository.isPending}
+                        >
+                          Disconnect
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Disconnect repository?</DialogTitle>
+                          <DialogDescription>
+                            This will disconnect <strong>{repo.fullName}</strong> from
+                            CodeReverb. New pull requests in this repository will no
+                            longer be automatically reviewed, and webhooks/indexing
+                            related to this repository may be disabled. Existing
+                            historical reviews will remain in analytics but will not
+                            be updated.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button variant="outline">Cancel</Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              disconnectRepository.mutate(repo.id)
+                            }
+                            disabled={disconnectRepository.isPending}
+                          >
+                            {disconnectRepository.isPending ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : null}
+                            Disconnect
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No repositories are currently connected. Connect a repository from
+                the Repositories page.
+              </p>
+            )}
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  disabled={!hasRepos || disconnectAllRepositories.isPending}
+                >
+                  {disconnectAllRepositories.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : null}
+                  Disconnect All Repositories
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Disconnect all repositories?</DialogTitle>
+                  <DialogDescription>
+                    This will disconnect all repositories currently connected to
+                    CodeReverb for this account or organization. New pull requests
+                    will no longer be automatically reviewed until repositories are
+                    reconnected. Existing reviews and analytics will remain but will
+                    not be updated.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline">Cancel</Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => disconnectAllRepositories.mutate()}
+                    disabled={disconnectAllRepositories.isPending}
+                  >
+                    {disconnectAllRepositories.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : null}
+                    Disconnect All
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   const renderOrganizationSettings = () => (
     <div className="space-y-6">
       <Card>
@@ -1453,6 +1588,8 @@ export function SettingsContent({
         return renderAppearanceSettings();
       case "organization":
         return renderOrganizationSettings();
+      case "repositories":
+        return renderRepositoriesSettings();
       default:
         return renderProfileSettings();
     }
