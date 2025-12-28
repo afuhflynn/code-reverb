@@ -23,7 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDailyActivityChart } from "@/hooks";
-import { DailyActivity } from "@/types";
 
 const getActivityLevel = (count: number): number => {
   if (count === 0) return 0;
@@ -121,12 +120,12 @@ export function ActivityChart() {
 
   if (isPending) {
     return (
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden w-full! flex-1!">
         <CardHeader className="space-y-2">
           <Skeleton className="h-6 w-64" />
           <Skeleton className="h-4 w-48" />
         </CardHeader>
-        <CardContent className="overflow-hidden">
+        <CardContent className="overflow-hidden w-full!">
           <div className="grid grid-flow-col auto-cols-min gap-1.5 overflow-hidden">
             {Array.from({ length: 53 * 7 }).map((_, i) => (
               <Skeleton key={i} className="h-3 w-3 rounded-sm" />

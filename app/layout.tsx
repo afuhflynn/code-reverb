@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     "OpenAI",
     "software development",
   ],
-  authors: [{ name: "CodeReverb Team" }],
+  authors: [{ name: "CodeReverb Team" }, { name: "afuhflynn" }],
   creator: "CodeReverb",
   publisher: "CodeReverb",
   formatDetection: {

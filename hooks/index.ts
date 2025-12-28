@@ -16,6 +16,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { ALL } from "node:dns";
 import { toast } from "sonner";
 
@@ -131,6 +132,7 @@ export function useConnectRepository({
   status,
 }: { search?: string; status?: string } = {}) {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationKey: ["create-webhook", "connect-repo"],
@@ -146,25 +148,10 @@ export function useConnectRepository({
     }) => await connectRepo(owner, repo, githubId),
     onMutate(variables) {
       variables.githubId;
-      // temporarily update the ui (Optimistic ui)
-      // queryClient.setQueryData(
-      //   ["repositories", search, status],
-      //   (prev: RepoWithConnected[]) => {
-      //     console.log({ prev });
-      //     return prev.map((repo) => {
-      //       if (repo.githubId === BigInt(variables.githubId))
-      //         repo.isConnected = true;
-      //       return repo;
-      //     });
-      //   }
-      // );
     },
 
-    onSuccess: () => {
-      toast.success("Repository connected succesfully :)");
-      queryClient.invalidateQueries({
-        queryKey: ["repositories", search, status],
-      });
+    onSuccess: (_, variables) => {
+      toast.success("Repository connected successfully");
     },
     onError: (error, variables) => {
       console.error(error);

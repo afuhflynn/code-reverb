@@ -25,31 +25,23 @@ model User {
   privacySettings    Json           @default("{}")
   appearanceSettings Json           @default("{}")
   createdAt          DateTime       @default(now())
+  twoFactorEnabled   Boolean        @default(false)
   updatedAt          DateTime       @updatedAt
   sessions           Session[]
   accounts           Account[]
   organizationId     String?
   repos              Repo[]
-  prs                PR[]
   personas           Persona[]
   feedbacks          Feedback[]
   apiKeys            ApiKey[]
   organization       Organization?  @relation(fields: [organizationId], references: [id])
   organizations      Organization[] @relation("OrganizationMembers")
   ownedOrganizations Organization[] @relation("OrganizationOwner") // <-- back-relation
-  twofa              TWOFA?
+  pullRequests       PullRequest[] // as author
+  reviews            Review[] // as user
 
   @@unique([email])
   @@map("user")
-}
-
-model TWOFA {
-  id     String  @id @default(cuid())
-  userId String  @unique
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  secret String
-  qrCode String
-  token  String?
 }
 
 model Session {
@@ -121,58 +113,39 @@ model Repo {
   githubId       BigInt        @unique
   ownerId        String
   owner          User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  username       String
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   webhookId      String?
   webhookSecret  String?
   url            String
-  prs            PR[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  reviews        Review[]
+  pullRequests   PullRequest[]
 
   @@index([ownerId])
   @@index([organizationId])
   @@map("repo")
 }
 
-model PR {
-  id          String   @id @default(cuid())
-  number      Int
-  title       String
-  description String?
-  githubId    String   @unique
-  repoId      String
-  repo        Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  status      PRStatus @default(open)
-  runs        Run[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Review {
+  id           String @id @default(cuid())
+  repositoryId String
+  repository   Repo   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prNumber     Int
+  prTitle      String
+  prUrl        String
+  review       String @db.Text
+  status       String @default("completed") // completed, failed, pending
 
-  @@index([repoId])
-  @@index([authorId])
-  @@map("pr")
-}
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-model Run {
-  id             String     @id @default(cuid())
-  prId           String
-  pr             PR         @relation(fields: [prId], references: [id], onDelete: Cascade)
-  personaId      String
-  persona        Persona    @relation(fields: [personaId], references: [id], onDelete: Cascade)
-  status         RunStatus  @default(pending)
-  processingTime Int? // Processing time in milliseconds
-  tokensUsed     Int? // AI tokens consumed
-  modelUsed      String? // AI model used (e.g., "gemini-1.5-pro")
-  comments       Comment[]
-  feedback       Feedback[]
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-
-  @@index([prId])
-  @@index([personaId])
-  @@map("run")
+  @@index([repositoryId])
+  @@map("review")
 }
 
 model Persona {
@@ -184,9 +157,9 @@ model Persona {
   avatar      String?
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  runs        Run[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  runs        Run[]
 
   @@index([userId])
   @@map("persona")
@@ -194,43 +167,67 @@ model Persona {
 
 model Comment {
   id        String   @id @default(cuid())
-  runId     String
-  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
   filePath  String
   line      Int?
   content   String
   githubId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  run       Run?     @relation(fields: [runId], references: [id])
+  runId     String?
 
-  @@index([runId])
   @@map("comment")
 }
 
 model Feedback {
   id        String   @id @default(cuid())
-  runId     String
-  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rating    Int // 1-5
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  run       Run?     @relation(fields: [runId], references: [id])
+  runId     String?
 
-  @@index([runId])
   @@index([userId])
   @@map("feedback")
 }
 
-model Embedding {
+model PullRequest {
   id        String   @id @default(cuid())
-  content   String
-  vector    Float[]
-  metadata  Json?
+  number    Int
+  title     String
+  url       String
+  repoId    String
+  repo      Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  runs      Run[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("embedding")
+  @@unique([repoId, number])
+  @@map("pull_request")
+}
+
+model Run {
+  id             String      @id @default(cuid())
+  prId           String
+  pr             PullRequest @relation(fields: [prId], references: [id], onDelete: Cascade)
+  status         String      @default("pending")
+  processingTime Int?
+  personaId      String
+  persona        Persona     @relation(fields: [personaId], references: [id])
+  result         String?     @db.Text
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  comments       Comment[]
+  feedbacks      Feedback[]
+
+  @@index([prId])
+  @@index([personaId])
+  @@map("run")
 }
 
 model ApiKey {
@@ -245,17 +242,4 @@ model ApiKey {
 
   @@index([userId])
   @@map("api_key")
-}
-
-enum PRStatus {
-  open
-  closed
-  merged
-}
-
-enum RunStatus {
-  pending
-  running
-  completed
-  failed
 }

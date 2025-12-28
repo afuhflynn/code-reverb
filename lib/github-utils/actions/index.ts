@@ -28,9 +28,11 @@ export async function getDashboardStats() {
     // Get user's github username
     const { data: user } = await octokit.rest.users.getAuthenticated();
 
-    // TODO: Fetch the total connected repos for the user.
-    const totalRepos = 60; // NOTE: Dummy data
+    const userRepos = await octokit.rest.repos.listForUser({
+      username: user.login,
+    });
 
+    const totalRepos = userRepos.data.length;
     // Fetch user contribution stats
     const calendar = await fetchUserGithubContributions(user.login, token);
     const totalCommits = calendar?.totalContributions || 0;
@@ -43,8 +45,11 @@ export async function getDashboardStats() {
 
     const totalPRs = PRs.total_count;
 
-    // TODO: Count ai reviews from the db
-    const totalReviews = 44;
+    const totalReviews = await prisma.review.count({
+      where: {
+        userId: session.user.id,
+      },
+    });
 
     return {
       totalCommits,
@@ -153,28 +158,17 @@ export async function getMonthlyActivity() {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 6);
 
-    // TODO: REVIEWS'S REAL DATA
-    const generateSampleReviews = () => {
-      const sampleReviews = [];
-      const now = new Date();
+    const reviews = await prisma.review.findMany({
+      where: {
+        userId: session.user.id,
+        createdAt: {
+          gte: threeMonthsAgo,
+        },
+      },
+    });
 
-      // Generate random reviews over the past 6 months
-      for (let i = 0; i < 45; i++) {
-        const randomDaysAgo = Math.floor(Math.random() * 180); // Random day in last 6 months
-        const reviewDate = new Date(now);
-        reviewDate.setDate(reviewDate.getDate() - randomDaysAgo);
-
-        sampleReviews.push({
-          createdAt: reviewDate,
-        });
-      }
-
-      return sampleReviews;
-    };
-
-    const reviews = generateSampleReviews();
     reviews.forEach((review) => {
-      const monthKey = months[review.createdAt.getMonth()];
+      const monthKey = months[new Date(review.createdAt).getMonth()];
       if (monthlyData[monthKey]) {
         monthlyData[monthKey].reviews += 1;
       }
@@ -205,4 +199,51 @@ export async function getMonthlyActivity() {
     console.error("Error fetching user monthly activity", error);
     return [];
   }
+}
+
+export async function getPullRequestDiff(
+  token: string,
+  owner: string,
+  repo: string,
+  prNumber: number
+) {
+  const octokit = new Octokit({ auth: token });
+
+  const { data: pr } = await octokit.rest.pulls.get({
+    owner,
+    repo,
+    pull_number: prNumber,
+  });
+
+  const { data: diff } = await octokit.rest.pulls.get({
+    owner,
+    repo,
+    pull_number: prNumber,
+    mediaType: {
+      format: "diff",
+    },
+  });
+
+  return {
+    diff: diff as unknown as string,
+    title: pr.title,
+    description: pr.body || "",
+    author: pr.user.name,
+  };
+}
+
+export async function postReviewComment(
+  token: string,
+  owner: string,
+  repo: string,
+  prNumber: number,
+  review: string
+) {
+  const octokit = new Octokit({ auth: token });
+  await octokit.rest.issues.createComment({
+    owner,
+    repo,
+    issue_number: prNumber,
+    body: `## Code review by CodeReverb\n\n${review}\n\n---\n*Powered by CodeReverb [Try out CodeReverb](https://codereverb.dev)*`,
+  });
 }

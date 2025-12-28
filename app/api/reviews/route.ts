@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
           startDate = new Date(
             now.getFullYear(),
             now.getMonth(),
-            now.getDate(),
+            now.getDate()
           );
           break;
         case "week":
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
           startDate = new Date(
             now.getFullYear(),
             Math.floor(now.getMonth() / 3) * 3,
-            1,
+            1
           );
           break;
         default:
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
           },
         },
         persona: { select: { name: true } },
-        feedback: {
+        feedbacks: {
           select: {
             rating: true,
             comment: true,
@@ -168,13 +168,13 @@ export async function GET(request: NextRequest) {
       prNumber: run.pr.number,
       title: run.pr.title,
       status: run.status,
-      qualityScore: run.feedback?.[0]?.rating || null,
+      qualityScore: run.feedbacks?.[0]?.rating || null,
       persona: run.persona.name,
       duration: run.processingTime
         ? `${Math.round(run.processingTime / 1000)}s`
         : "-",
       createdAt: run.createdAt,
-      author: run.pr.author.name || run.pr.author.email,
+      author: run?.pr?.author?.name || run?.pr?.author?.email,
       commentCount: run._count.comments,
     }));
 
@@ -194,7 +194,7 @@ export async function GET(request: NextRequest) {
     console.error("Reviews GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch reviews" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
     console.error("Reviews POST error:", error);
     return NextResponse.json(
       { error: "Failed to initiate review" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,227 +1,204 @@
 # CodeReverb
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/afuhflynn/CodeReverb.svg)](https://github.com/afuhflynn/CodeReverb/issues)
+[![GitHub stars](https://img.shields.io/github/stars/afuhflynn/code-reverb.svg)](https://github.com/afuhflynn/code-reverb/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/afuhflynn/code-reverb.svg)](https://github.com/afuhflynn/code-reverb/issues)
 
-An **open-source** AI-powered code review platform that integrates with GitHub to provide intelligent, automated code analysis and feedback on pull requests.
+**CodeReverb** is an open-source, AI-powered code review platform.
 
-## 🌟 Open Source
+The full codebase is available under the **MIT License** on GitHub: [https://github.com/afuhflynn/code-reverb](https://github.com/afuhflynn/code-reverb)
 
-CodeReverb is fully open source under the MIT License. The codebase is available on [GitHub](https://github.com/afuhflynn/CodeReverb), and we welcome contributions from the community. While the software is open source, we also offer a hosted SaaS version at [codereverb.dev](https://codereverb.dev) for users who prefer a managed solution.
+A managed, hosted version is available at **[https://code-reverb.dev](https://code-reverb.dev)** for teams that prefer not to self-host.
+
+---
+
+## Why CodeReverb?
+
+Code reviews are slow, inconsistent, and often skipped under pressure. CodeReverb automates first-pass reviews using configurable AI personas while keeping humans in control.
+
+You can self-host CodeReverb for free or use the hosted service to offload infrastructure, AI inference, indexing, and updates.
+
+---
 
 ## Features
 
-- **AI-Powered Reviews**: Uses Google Gemini and OpenAI models for intelligent code analysis
-- **GitHub Integration**: Seamless webhook integration for real-time PR monitoring
-- **Custom Personas**: Create AI reviewers with different personalities and expertise
-- **Inline Comments**: Post detailed review comments directly on GitHub PRs
-- **Analytics Dashboard**: Track review metrics and team performance
-- **Role-Based Access**: User, admin, and organization-level permissions
-- **Async Processing**: Inngest-powered background job processing
-- **Email Notifications**: Configurable notifications for review completion
+* **AI-Powered Reviews**: Uses Google Gemini and OpenAI models for intelligent code analysis
+* **GitHub Integration**: Real-time PR monitoring via GitHub webhooks
+* **Custom Personas**: Create AI reviewers with different personalities and expertise
+* **Inline Comments**: Post detailed review comments directly on GitHub PRs
+* **Analytics Dashboard**: Track review metrics and team performance
+* **Role-Based Access**: User, admin, and organization-level permissions
+* **Async Processing**: Inngest-powered background job execution
+* **Email Notifications**: Configurable notifications for reviews, failures, and security events
+
+---
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS, Shadcn UI
-- **Backend**: Next.js API Routes, Prisma ORM, PostgreSQL
-- **AI**: Google Gemini, OpenAI GPT, Pinecone vector DB
-- **Auth**: Better Auth with GitHub OAuth
-- **Jobs**: Inngest for background processing
-- **Email**: Nodemailer
-- **Deployment**: Vercel
-- **Secrets**: nvii.dev
+* **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS, Shadcn UI
+* **Backend**: Next.js API Routes, Prisma ORM, PostgreSQL
+* **AI**: Google Gemini, OpenAI GPT, Pinecone vector database
+* **Auth**: Better Auth with GitHub OAuth
+* **Jobs**: Inngest
+* **Email**: Nodemailer (SMTP)
+* **Deployment**: Vercel, Docker
+* **Secrets**: nvii.dev
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+
-- PostgreSQL
-- GitHub OAuth App
-- Pinecone account
-- Google AI API key
-- OpenAI API key
-- nvii.dev account
+* Node.js 18+
+* PostgreSQL
+* GitHub OAuth App
+* Pinecone account
+* Google AI API key
+* OpenAI API key
+* nvii.dev account
+
+---
+
+### Quick Self-Host (Docker)
+
+```bash
+git clone https://github.com/afuhflynn/code-reverb.git
+cd code-reverb
+cp .env.example .env
+# Fill in required API keys and secrets
+
+docker-compose up -d --build
+pnpm prisma migrate deploy
+pnpm prisma generate
+pnpm dev
+```
+
+---
 
 ### Local Development
 
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/afuhflynn/CodeReverb.git
-   cd CodeReverb
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Set up environment variables**
-
-   ```bash
-   cp .env.example .env.local
-   ```
-
-   Configure the following variables:
-
-   ```env
-   # Database
-
-   DATABASE_URL="postgresql://postgres:password@localhost:5439/code_reverb" # Local postgres db - docker container
-
-   # GitHub OAuth
-
-   GITHUB_CLIENT_ID="your_github_client_id"
-   GITHUB_CLIENT_SECRET="your_github_client_secret"
-
-   # AI APIs
-
-   GOOGLE_GENERATIVE_AI_API_KEY="your_google_generative_ai_api_key"
-   OPENAI_API_KEY="your_openai_api_key"
-
-   # Vector Database (Pinecone)
-
-   PINECONE_API_KEY="your_pinecone_api_key"
-   PINECONE_INDEX_NAME="CodeReverb"
-   PINECONE_ENVIRONMENT="your_pinecone_environment"
-
-   # Email Service (SMTP)
-
-   SMTP_HOST="smtp.gmail.com"
-   SMTP_PORT="587"
-   SMTP_USER="<your_mail_id>"
-   SMTP_PASS="your_smt_pass"
-   FROM_EMAIL="<from_email>"
-   SMTP_USER_NAME="smtp_user_name"
-
-   # Background Jobs (Inngest)
-
-   INNGEST_EVENT_KEY="dev-event-key"
-   INNGEST_SIGNING_KEY="dev-signing-key"
-
-   # Secrets Management (nvii.dev)
-
-   NVII_API_KEY="your_nvii_api_key"
-
-   # Arcjet setup
-
-   ARCJET_KEY="your_arcjet_key"
-
-   # Optional: For production
-
-   VERCEL_URL="your_vercel_deployment_url"
-   NODE_ENV="development"
-
-   BETTER_AUTH_SECRET="your_better_auth_secret"
-   BETTER_AUTH_URL="<http://localhost:3000>" # Base URL of your app
-
-   NEXT_PUBLIC_BASE_URL="<http://localhost:3000>"
-   NEXT_PUBLIC_API_BASE_URL="<http://localhost:3000/api>"
-   ```
-
-4. **Set up the database**
-
-   ```bash
-   # Start PostgreSQL (using Docker)
-   docker-compose up -d postgres
-
-   # Run migrations
-   pnpm prisma migrate dev
-
-   # Generate Prisma client
-   pnpm prisma generate
-   ```
-
-5. **Start Inngest (optional for local dev)**
-
-   ```bash
-   docker-compose up -d inngest
-   ```
-
-6. **Run the development server**
-
-   ```bash
-   pnpm dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Building and Testing
+1. **Install dependencies**
 
 ```bash
-# Build for production
-pnpm build
-
-# Run linting
-pnpm lint
-
-# Run type checking
-pnpm typecheck
-
-# Start production server
-pnpm start
+pnpm install
 ```
+
+2. **Set up environment variables**
+
+```bash
+cp .env.example .env.local
+```
+
+Key variables:
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5439/code_reverb
+
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+GOOGLE_GENERATIVE_AI_API_KEY=your_google_key
+OPENAI_API_KEY=your_openai_key
+
+PINECONE_API_KEY=your_pinecone_key
+PINECONE_INDEX_NAME=CodeReverb
+
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email
+SMTP_PASS=your_password
+FROM_EMAIL=notifications@code-reverb.dev
+
+INNGEST_EVENT_KEY=dev-event-key
+INNGEST_SIGNING_KEY=dev-signing-key
+
+NVII_API_KEY=your_nvii_key
+ARCJET_KEY=your_arcjet_key
+
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+3. **Database setup**
+
+```bash
+docker-compose up -d postgres
+pnpm prisma migrate dev
+pnpm prisma generate
+```
+
+4. **Run the app**
+
+```bash
+pnpm dev
+```
+
+---
 
 ## Project Structure
 
 ```txt
 CodeReverb/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── dashboard/         # Dashboard pages
-│   ├── admin/            # Admin pages
-│   ├── repos/            # Repository management
-│   ├── personas/         # AI persona management
-│   └── (auth)/           # Authentication pages
-├── components/            # Reusable UI components
-│   ├── ui/               # Shadcn UI components
-│   ├── layout/           # Layout components
-│   └── dashboard/        # Dashboard-specific components
-├── lib/                   # Utility libraries
-│   ├── auth.ts           # Authentication config
-│   ├── prisma.ts         # Database client
-│   ├── inngest.ts        # Background jobs
-│   └── ai/               # AI orchestration
-├── prisma/               # Database schema
-├── public/               # Static assets
-└── inngest/              # Background job functions
+├── app/            # Next.js app directory
+├── components/     # UI components
+├── lib/            # Core libraries (auth, prisma, inngest, ai)
+├── prisma/         # Database schema
+├── public/         # Static assets
+├── inngest/        # Background jobs
+└── docs/           # Documentation
 ```
+
+---
 
 ## Deployment
 
-### Vercel Deployment
+### Vercel
 
-1. **Connect your repository to Vercel**
-2. **Configure environment variables** in Vercel dashboard
-3. **Set up PostgreSQL** (use Vercel Postgres or external provider)
-4. **Deploy**
+1. Connect the GitHub repository
+2. Configure environment variables
+3. Set up PostgreSQL
+4. Deploy
 
-### Docker Deployment
+### Docker
 
 ```bash
-# Build and run with Docker
 docker-compose up -d
 ```
 
+---
+
+## Security
+
+If you discover a security vulnerability, please report it privately to **[security@code-reverb.dev](mailto:security@code-reverb.dev)**.
+
+Do not disclose security issues publicly.
+
+---
+
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for detailed information on how to get started, development setup, and our contribution process.
+Contributions are welcome. Please read **CONTRIBUTING.md** and **CODE_OF_CONDUCT.md** before submitting issues or pull requests.
 
-### Community
+---
 
-- **GitHub Issues**: [Report bugs and request features](https://github.com/afuhflynn/CodeReverb/issues)
-- **Discussions**: [Join community discussions](https://github.com/afuhflynn/CodeReverb/discussions)
-- **Discord**: [Chat with the community](https://discord.gg/codereverb)
+## Community
 
-## License
+* GitHub Issues: [https://github.com/afuhflynn/code-reverb/issues](https://github.com/afuhflynn/code-reverb/issues)
+* Discussions: [https://github.com/afuhflynn/code-reverb/discussions](https://github.com/afuhflynn/code-reverb/discussions)
+* Discord: [https://discord.gg/code-reverb](https://discord.gg/code-reverb)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---
 
 ## Support
 
-- **Documentation**: [docs.CodeReverb.dev](https://docs.CodeReverb.dev)
-- **Issues**: [GitHub Issues](https://github.com/your-org/CodeReverb/issues)
-- **Email**: [CodeReverb Support](support@CodeReverb.dev)
+* Documentation: [https://docs.code-reverb.dev](https://docs.code-reverb.dev)
+* Issues: [https://github.com/afuhflynn/code-reverb/issues](https://github.com/afuhflynn/code-reverb/issues)
+* Email: [support@code-reverb.dev](mailto:support@code-reverb.dev)
+
+---
+
+## License
+
+This project is licensed under the MIT License. See **LICENSE** for details.
+
+Built in public. Community-driven. Opinionated by design.

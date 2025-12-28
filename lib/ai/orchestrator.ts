@@ -1,7 +1,7 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
-import { Pinecone } from "@pinecone-database/pinecone";
+import { Index, Pinecone } from "@pinecone-database/pinecone";
 
 export interface AIPersona {
   id: string;
@@ -37,15 +37,19 @@ export class AIOrchestrator {
   private pinecone: Pinecone;
   private primaryModel = google("gemini-1.5-pro");
   private fallbackModel = openai("gpt-4");
+  private pineconeIndex: Index;
 
   constructor() {
     this.pinecone = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY!,
+      apiKey: process.env.PINECONE_API_KEY as string,
     });
+    this.pineconeIndex = this.pinecone.index(
+      process.env.PINECONE_INDEX_NAME as string
+    );
   }
 
   async generateReview(
-    request: CodeReviewRequest,
+    request: CodeReviewRequest
   ): Promise<CodeReviewResponse> {
     try {
       // Try primary model first
@@ -59,7 +63,7 @@ export class AIOrchestrator {
 
   private async generateReviewWithModel(
     model: any,
-    request: CodeReviewRequest,
+    request: CodeReviewRequest
   ): Promise<CodeReviewResponse> {
     const { code, language, context, persona, prTitle, prDescription } =
       request;
@@ -70,13 +74,13 @@ export class AIOrchestrator {
     const systemPrompt = this.buildSystemPrompt(
       persona,
       language,
-      relevantContext,
+      relevantContext
     );
     const userPrompt = this.buildUserPrompt(
       code,
       context,
       prTitle,
-      prDescription,
+      prDescription
     );
 
     try {
@@ -113,7 +117,7 @@ export class AIOrchestrator {
   private buildSystemPrompt(
     persona: AIPersona,
     language: string,
-    context: string[],
+    context: string[]
   ): string {
     return `${persona.prompt}
 
@@ -127,7 +131,13 @@ Relevant context from similar code reviews:
 ${context.join("\n")}
 
 Provide specific, actionable feedback with line numbers when possible.
-Be ${persona.name === "Strict Reviewer" ? "thorough and critical" : persona.name === "Beginner Friendly" ? "helpful and educational" : "balanced and practical"}.
+Be ${
+      persona.name === "Strict Reviewer"
+        ? "thorough and critical"
+        : persona.name === "Beginner Friendly"
+        ? "helpful and educational"
+        : "balanced and practical"
+    }.
 
 Return your response as a structured JSON object with comments array, summary, and score.`;
   }
@@ -136,7 +146,7 @@ Return your response as a structured JSON object with comments array, summary, a
     code: string,
     context?: string,
     prTitle?: string,
-    prDescription?: string,
+    prDescription?: string
   ): string {
     let prompt = `Please review the following code:\n\n\`\`\`\n${code}\n\`\`\`\n\n`;
 
@@ -159,7 +169,7 @@ Return your response as a structured JSON object with comments array, summary, a
 
   private async getRelevantContext(
     code: string,
-    language: string,
+    language: string
   ): Promise<string[]> {
     try {
       const index = this.pinecone.index(process.env.PINECONE_INDEX_NAME!);
@@ -207,7 +217,7 @@ Return your response as a structured JSON object with comments array, summary, a
     code: string,
     language: string,
     review: CodeReviewResponse,
-    personaId: string,
+    personaId: string
   ): Promise<void> {
     try {
       const index = this.pinecone.index(process.env.PINECONE_INDEX_NAME!);

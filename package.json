@@ -24,6 +24,7 @@
     "@ai-sdk/google": "^1.2.22",
     "@ai-sdk/openai": "^1.3.24",
     "@ai-sdk/react": "^2.0.115",
+    "@ai-sdk/xai": "^2.0.42",
     "@arcjet/ip": "1.0.0-beta.15",
     "@arcjet/next": "1.0.0-beta.15",
     "@hookform/resolvers": "^5.2.2",

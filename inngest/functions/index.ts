@@ -1,189 +1,15 @@
-import { inngest } from "../../lib/inngest";
-import { prisma } from "../../lib/prisma";
-import { aiOrchestrator } from "../../lib/ai/orchestrator";
+import { inngest } from "@/lib/inngest";
+import { prisma } from "@/lib/prisma";
+import { aiOrchestrator } from "@/lib/ai/orchestrator";
 import { Octokit } from "@octokit/rest";
-
-// PR Analysis Worker
-export const prAnalyze = inngest.createFunction(
-  { id: "pr-analyze" },
-  { event: "pr.analyze" },
-  async ({ event, step }) => {
-    const { prId, repoId, githubPR } = event.data;
-
-    // Get PR and repo details
-    const pr = await step.run("get-pr", async () => {
-      return await (prisma as any).pr.findUnique({
-        where: { id: prId },
-        include: { repo: true, author: true },
-      });
-    });
-
-    if (!pr) {
-      throw new Error(`PR ${prId} not found`);
-    }
-
-    // Get persona (default to first one or create default)
-    const persona = await step.run("get-persona", async () => {
-      const defaultPersona = await (prisma as any).persona.findFirst({
-        where: { userId: pr.repo.ownerId },
-      });
-
-      if (!defaultPersona) {
-        // Create default persona
-        return await (prisma as any).persona.create({
-          data: {
-            name: "Balanced Reviewer",
-            description:
-              "A balanced code reviewer that provides constructive feedback",
-            prompt:
-              "You are a balanced code reviewer. Provide constructive feedback that helps improve code quality while being encouraging.",
-            userId: pr.repo.ownerId,
-          },
-        });
-      }
-
-      return defaultPersona;
-    });
-
-    // Create run record
-    const run = await step.run("create-run", async () => {
-      return await (prisma as any).run.create({
-        data: {
-          prId: pr.id,
-          personaId: persona.id,
-          status: "running",
-        },
-      });
-    });
-
-    try {
-      // Clone and analyze repository
-      const analysis = await step.run("analyze-code", async () => {
-        // This would clone the repo and analyze the diff
-        // For now, return mock analysis
-        const mockCode = `
-function calculateTotal(items) {
-  let total = 0;
-  for (let item of items) {
-    total += item.price * item.quantity;
-  }
-  return total;
-}
-        `;
-
-        return await aiOrchestrator.generateReview({
-          code: mockCode,
-          language: "javascript",
-          persona,
-          prTitle: pr.title,
-          prDescription: pr.description,
-        });
-      });
-
-      // Store comments
-      await step.run("store-comments", async () => {
-        for (const comment of analysis.comments) {
-          await (prisma as any).comment.create({
-            data: {
-              runId: run.id,
-              filePath: comment.filePath,
-              line: comment.line,
-              content: comment.content,
-            },
-          });
-        }
-      });
-
-      // Post comments to GitHub
-      await step.run("post-github-comments", async () => {
-        const octokit = new Octokit({
-          auth: process.env.GITHUB_TOKEN, // Would need to be configured per user
-        });
-
-        for (const comment of analysis.comments) {
-          try {
-            await octokit.pulls.createReviewComment({
-              owner: pr.repo.fullName.split("/")[0],
-              repo: pr.repo.fullName.split("/")[1],
-              pull_number: pr.number,
-              body: comment.content,
-              path: comment.filePath,
-              line: comment.line,
-              commit_id: githubPR.head.sha,
-            });
-          } catch (error) {
-            console.warn("Failed to post comment to GitHub:", error);
-          }
-        }
-      });
-
-      // Store review context in vector DB
-      await step.run("store-context", async () => {
-        await aiOrchestrator.storeReviewContext(
-          "mock code content", // Would be actual diff
-          "javascript", // Would detect language
-          analysis,
-          persona.id
-        );
-      });
-
-      // Update run status
-      await step.run("update-run", async () => {
-        await (prisma as any).run.update({
-          where: { id: run.id },
-          data: { status: "completed" },
-        });
-      });
-
-      // Send notification
-      await step.run("send-notification", async () => {
-        // Email notification would be sent here
-        console.log(`Review completed for PR ${pr.number}`);
-      });
-
-      return { success: true, runId: run.id };
-    } catch (error) {
-      // Update run status on failure
-      await step.run("update-run-failed", async () => {
-        await (prisma as any).run.update({
-          where: { id: run.id },
-          data: { status: "failed" },
-        });
-      });
-
-      throw error;
-    }
-  }
-);
-
-// Repository Cloning Worker
-export const repoClone = inngest.createFunction(
-  { id: "repo-clone" },
-  { event: "repo.clone" },
-  async ({ event, step }) => {
-    const { repoId } = event.data;
-
-    const repo = await step.run("get-repo", async () => {
-      return await (prisma as any).repo.findUnique({
-        where: { id: repoId },
-      });
-    });
-
-    if (!repo) {
-      throw new Error(`Repository ${repoId} not found`);
-    }
-
-    // Clone repository logic would go here
-    // This is a placeholder for the actual cloning implementation
-    await step.run("clone-repo", async () => {
-      // Use git clone or similar
-      console.log(`Cloning repository: ${repo.fullName}`);
-      // Actual cloning logic...
-    });
-
-    return { success: true, repoId };
-  }
-);
+import { getRepoFileContents } from "@/lib/github-utils";
+import { indexCodebase, retrieveContext } from "@/lib/ai/lib/rag";
+import {
+  getPullRequestDiff,
+  postReviewComment,
+} from "@/lib/github-utils/actions";
+import { generateText } from "ai";
+import { google } from "@ai-sdk/google";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -233,5 +59,323 @@ export const commentPost = inngest.createFunction(
     });
 
     return { success: true, commentCount: comments.length };
+  }
+);
+
+// Repo indexing Worker (Embed to pinecone)
+export const indexRepo = inngest.createFunction(
+  {
+    id: "index-repo",
+  },
+  {
+    event: "repository.connected",
+  },
+  async ({ event, step }) => {
+    const { owner, repo, userId } = event.data;
+
+    // Fetch all files in repo
+    const files = await step.run("fetch-files", async () => {
+      const account = await prisma.account.findFirst({
+        where: {
+          userId,
+          providerId: "github",
+        },
+      });
+
+      if (!account?.accessToken)
+        throw new Error("No GitHub access token found");
+
+      return await getRepoFileContents(account.accessToken, owner, repo);
+    });
+
+    // Index codebase
+    await step.run("index-codebase", async () => {
+      await indexCodebase(`${owner}/${repo}`, files);
+    });
+
+    return { success: true, indexedFiles: files.length };
+  }
+);
+
+// AI PR Summary Worker
+export const summarizePr = inngest.createFunction(
+  { id: "summarize-pr", concurrency: 20 },
+  { event: "pr.summary.requested" },
+
+  async ({ event, step }) => {
+    const { owner, repo, prNumber, title, description, installationId } =
+      event.data;
+
+    const summary = await step.run("generate-pr-summary", async () => {
+      const prompt = `You are a senior engineer. Write a concise summary of this pull request for teammates scanning notifications.
+
+Rules:
+- 2–4 bullet points.
+- No implementation details, just what and why at a high level.
+- If the description is empty or unclear, say that explicitly.
+- Do not invent features or files.
+
+PR Title: ${title}
+PR Description:
+${description || "No description provided."}
+`;
+
+      const { text } = await generateText({
+        model: google("gemini-2.5-flash"),
+        prompt,
+      });
+
+      return text;
+    });
+
+    await step.run("post-summary-comment", async () => {
+      await postReviewComment(
+        installationId, // or installation/user token, see your existing code
+        owner,
+        repo,
+        prNumber,
+        summary
+      );
+    });
+
+    return { success: true };
+  }
+);
+
+// Ai code review Worker
+export const generateReview = inngest.createFunction(
+  { id: "generate-review", concurrency: 5 },
+  { event: "pr.review.requested" },
+
+  async ({ event, step }) => {
+    const { owner, repo, prNumber, userId, runId } = event.data;
+
+    // Update run status to running
+    await step.run("update-run-status", async () => {
+      await (prisma as any).run.update({
+        where: { id: runId },
+        data: { status: "running" },
+      });
+    });
+
+    const { diff, title, description, token } = await step.run(
+      "fetch-pr-data",
+      async () => {
+        const account = await prisma.account.findFirst({
+          where: {
+            userId: userId,
+            providerId: "github",
+          },
+        });
+
+        if (!account?.accessToken) {
+          throw new Error("No GitHub access token found");
+        }
+
+        const data = await getPullRequestDiff(
+          account.accessToken,
+          owner,
+          repo,
+          prNumber
+        );
+        return { ...data, token: account.accessToken };
+      }
+    );
+
+    const context = await step.run("retrieve-context", async () => {
+      const query = `${title}\n${description}`;
+
+      return await retrieveContext(query, `${owner}/${repo}`);
+    });
+
+    const review = await step.run("generate-ai-review", async () => {
+      const prompt = `You are a senior software engineer conducting a professional code review for this specific repository. Analyze this pull request with technical precision and provide concise, actionable feedback.
+
+# CRITICAL INSTRUCTIONS – ANTI-HALLUCINATION PROTOCOL (MUST FOLLOW)
+
+1. ONLY analyze code visible in the provided diff.
+2. NEVER invent file paths, function names, modules, or behavior.
+3. If context is missing, explicitly write **INSUFFICIENT CONTEXT** and avoid guessing.
+4. Do NOT suggest changes for files not shown in the diff.
+5. If you are unsure about line numbers or impact, mark the item as **LOW CONFIDENCE** and say why.
+6. Prefer fewer, high-quality findings over many speculative ones.
+
+Before you finish, mentally check:
+- No invented files/functions/lines are referenced.
+- All assumptions are clearly labeled with a confidence level.
+If any of these fail, downgrade confidence and/or mark as **INSUFFICIENT CONTEXT**.
+
+---
+
+# Pull Request Information
+**Title**: ${title}
+**Description**: ${description || "No description provided"}
+
+## Codebase Context
+${context.join("\n\n")}
+
+## Code Changes (visible diff)
+\`\`\`diff
+${diff}
+\`\`\`
+
+---
+
+# Review Output Format (STRICT)
+Use Markdown. Be concise. For small/simple PRs, keep sections brief.
+
+## Summary
+- 1–3 short bullets summarizing the overall change.
+- Mention risk level (low/medium/high) and main affected area(s).
+
+---
+
+## Changes (per file)
+Create **one section per changed file** using this exact heading format so it can be parsed:
+
+### File: \`path/to/file.ext\`
+
+For each file:
+- **Purpose**: 1–2 lines describing this file's role (or **INSUFFICIENT CONTEXT**).
+- **Key modifications** (bullet list, max 3 bullets):
+  - Line(s): \`start-end\` — what changed and why it likely changed.
+- **Impact**: bullet list of immediate risks/consumers (or "Minimal impact" if trivial).
+- **Confidence**: **HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT** — 1 short justification.
+
+If you have no meaningful feedback for a file, still create the section and say "No issues found in this diff (Confidence: HIGH)".
+
+---
+
+## Critical Issues (sorted by severity)
+Only include issues that materially affect correctness, security, performance, or maintainability.
+
+For each issue:
+- **Severity**: HIGH / MEDIUM / LOW
+- **Confidence**: HIGH / MEDIUM / LOW / INSUFFICIENT CONTEXT
+- **Location**: \`path/to/file:line-start-line-end\`
+- **Issue**: one-line title.
+- **Evidence**: paste the exact snippet from the diff (do not paraphrase).
+- **Analysis**: 1–3 short bullets.
+- **Suggested fix**: short description or minimal code snippet.
+
+Keep this section empty if there are no real issues; do NOT invent nitpicks just to fill it.
+
+---
+
+## Suggestions (quality, security, testing)
+Group high-value suggestions only. For each suggestion:
+- **Type**: quality / security / testing / style
+- **Confidence**: HIGH / MEDIUM / LOW
+- **Action**: concrete, copy-pastable code or a very short checklist.
+- **Why**: one short sentence describing the benefit.
+
+Avoid generic style advice unless the diff clearly violates existing patterns.
+
+---
+
+## Tests & Verification
+- **Tests added/modified?** yes/no (based on the diff only).
+- **Recommended tests**: 2–5 bullets with specific scenarios or functions to cover.
+- **Confidence**: HIGH / MEDIUM / LOW.
+
+---
+
+## Pre-merge Checklist
+Use this checklist, marking items that cannot be verified as **INSUFFICIENT CONTEXT**:
+- [ ] All HIGH severity issues addressed or explicitly accepted.
+- [ ] Appropriate unit tests exist or are added for changed logic.
+- [ ] Risky paths (auth, payments, persistence, concurrency) manually reviewed.
+- [ ] CI/test suite passes.
+
+---
+
+## Review Confidence Summary
+- **High confidence**: 1–3 key points you are very sure about.
+- **Medium/low confidence**: 1–3 items that depend on missing context.
+- **Items requiring manual review**: list anything that a human must double-check.
+
+---
+
+**End of Review**
+*This review followed the Anti-Hallucination Protocol: only visible diff analyzed; assumptions labeled; speculative items minimized.*`;
+      const { text } = await generateText({
+        model: google("gemini-2.5-flash"),
+        prompt,
+      });
+
+      return text;
+    });
+
+    await step.run("post-comment", async () => {
+      await postReviewComment(token, owner, repo, prNumber, review);
+    });
+
+    await step.run("save-review-result", async () => {
+      const startTime = Date.now();
+
+      // Save review result to Run
+      await (prisma as any).run.update({
+        where: { id: runId },
+        data: {
+          result: review,
+          status: "completed",
+          processingTime: Date.now() - startTime,
+        },
+      });
+
+      // Parse review text to extract comments (simplified: create one comment per file section)
+      const fileSections = review.split(/### File: `([^`]+)`/);
+      for (let i = 1; i < fileSections.length; i += 2) {
+        const filePath = fileSections[i];
+        const content = fileSections[i + 1]
+          ?.split(/### File: |## [^#]/)?.[0]
+          ?.trim();
+
+        if (content) {
+          await (prisma as any).comment.create({
+            data: {
+              runId,
+              filePath,
+              content,
+            },
+          });
+        }
+      }
+
+      // If no file sections found, save full review as one comment
+      if (fileSections.length <= 1) {
+        await (prisma as any).comment.create({
+          data: {
+            runId,
+            filePath: null,
+            content: review,
+          },
+        });
+      }
+
+      // Keep old Review model for backward compatibility
+      const repository = await prisma.repo.findFirst({
+        where: {
+          ownerId: userId,
+          fullName: `${owner}/${repo}`,
+          name: repo,
+        },
+      });
+
+      if (repository) {
+        await prisma.review.create({
+          data: {
+            repositoryId: repository.id,
+            prNumber,
+            prTitle: title,
+            prUrl: `https://github.com/${owner}/${repo}/pull/${prNumber}`,
+            review,
+            status: "completed",
+            userId,
+          },
+        });
+      }
+    });
+    return { success: true };
   }
 );

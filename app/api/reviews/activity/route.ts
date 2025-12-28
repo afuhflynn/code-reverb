@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
           },
         },
         persona: { select: { name: true } },
-        feedback: { select: { rating: true }, take: 1 },
+        feedbacks: { select: { rating: true }, take: 1 },
         _count: { select: { comments: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -92,7 +92,9 @@ export async function GET(request: NextRequest) {
       description:
         run.status === "completed"
           ? `Quality Score: ${
-              run.feedback?.[0]?.rating ? `${run.feedback[0].rating}/10` : "N/A"
+              run.feedbacks?.[0]?.rating
+                ? `${run.feedbacks[0].rating}/10`
+                : "N/A"
             } - Generated ${run._count?.comments || 0} insightful comments`
           : run.status === "running"
           ? `Using ${run.persona.name} persona - ${run.pr.title}`
@@ -118,9 +120,9 @@ export async function GET(request: NextRequest) {
       user: feedback.user.name || feedback.user.email || "Anonymous",
       metadata: {
         rating: feedback.rating,
-        prId: feedback.run.prId,
-        repo: feedback.run.pr.repo.name,
-        persona: feedback.run.persona.name,
+        prId: feedback?.run?.prId,
+        repo: feedback?.run?.pr.repo.name,
+        persona: feedback?.run?.persona.name,
       },
     }));
 
