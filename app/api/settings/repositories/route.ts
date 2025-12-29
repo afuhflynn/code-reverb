@@ -13,7 +13,6 @@ export async function GET() {
       select: {
         id: true,
         fullName: true,
-        provider: true,
       },
       orderBy: {
         fullName: "asc",
@@ -25,7 +24,7 @@ export async function GET() {
     console.error("Settings repositories GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch connected repositories" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -46,7 +45,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Settings repositories DELETE all error:", error);
     return NextResponse.json(
       { error: "Failed to disconnect repositories" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

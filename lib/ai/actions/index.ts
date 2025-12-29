@@ -89,7 +89,6 @@ export async function reviewPullRequest(
 
     await inngest.send({
       name: "pr.summary.requested",
-      id: "summarize-pr",
       data: {
         owner,
         repo,
@@ -108,7 +107,6 @@ export async function reviewPullRequest(
 
     await inngest.send({
       name: "pr.review.requested",
-      id: "generate-review",
       data: {
         owner,
         repo,
