@@ -89,7 +89,7 @@ export async function reviewPullRequest(
 
     await inngest.send({
       name: "pr.summary.requested",
-      id: `summary-${repository.id}-${prNumber}`,
+      id: "summarize-pr",
       data: {
         owner,
         repo,
@@ -106,17 +106,17 @@ export async function reviewPullRequest(
       },
     });
 
-    // await inngest.send({
-    //   name: "pr.review.requested",
-    //   id: `review-${repository.id}-${prNumber}`,
-    //   data: {
-    //     owner,
-    //     repo,
-    //     prNumber,
-    //     userId: repository.ownerId,
-    //     runId: run.id,
-    //   },
-    // });
+    await inngest.send({
+      name: "pr.review.requested",
+      id: "generate-review",
+      data: {
+        owner,
+        repo,
+        prNumber,
+        userId: repository.ownerId,
+        runId: run.id,
+      },
+    });
 
     return {
       sucess: true,
