@@ -230,6 +230,9 @@ export async function getPullRequestDiff(
     title: pr.title,
     description: pr.body || "",
     author: pr.user.name,
+    changed_files: pr.changed_files,
+    additions: pr.additions,
+    deletions: pr.deletions,
   };
 }
 
