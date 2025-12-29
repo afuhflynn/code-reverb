@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     if (event === "installation") {
       // Handle GitHub App installation created
       if (body?.action === "created" && body?.installation) {
-        inngest.send({
+        await inngest.send({
           name: "installation.created",
           data: {
             installationId: body.installation?.id ?? null,
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
       // Handle GitHub App installation deleted
       if (body?.action === "deleted" && body?.installation) {
-        inngest.send({
+        await inngest.send({
           name: "installation.deleted",
           data: {
             installationId: body.installation?.id ?? null,
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 
       // Handle GitHub App installation suspended
       if (body?.action === "suspend" && body?.installation) {
-        inngest.send({
+        await inngest.send({
           name: "installation.suspend",
           data: {
             installationId: body.installation?.id ?? null,
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
       // Handle GitHub App installation unsuspended
       if (body?.action === "unsuspend" && body?.installation) {
-        inngest.send({
+        await inngest.send({
           name: "installation.unsuspend",
           data: {
             installationId: body.installation?.id ?? null,
@@ -106,20 +106,22 @@ export async function POST(request: NextRequest) {
       const [owner, repoName] = repo?.split("/");
       // Trigger AI review when PR is opened or updated
       if (action === "opened" || action === "synchronized") {
-        reviewPullRequest(
-          owner,
-          repoName,
-          prNumber,
-          pull_request?.base?.sha,
-          pull_request?.head?.sha
-        )
-          .then(() => console.log(`Review queued for: ${repo} #${prNumber}`))
-          .catch((error) =>
-            console.error(
-              `Review queue failed for repo: ${repo} #${prNumber}: `,
-              error
-            )
+        try {
+          await reviewPullRequest(
+            owner,
+            repoName,
+            prNumber,
+            pull_request?.base?.sha,
+            pull_request?.head?.sha
           );
+          console.log(`Review queued for: ${repo} #${prNumber}`);
+        } catch (error) {
+          console.error(
+            `Review queue failed for repo: ${repo} #${prNumber}:`,
+            error
+          );
+          // Don't throw - webhook was still processed successfully
+        }
       }
     }
 
