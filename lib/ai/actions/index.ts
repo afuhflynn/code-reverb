@@ -88,41 +88,38 @@ export async function reviewPullRequest(
       },
     });
 
-    try {
-      await inngest.send({
-        name: "pr.summary.requested",
-        id: `summary-${repository.id}-${prNumber}`,
-        data: {
-          owner,
-          repo,
-          prNumber,
-          title: title ?? "",
-          description: description ?? "",
-          accountId: githubAccount.accountId,
-          installationId: installationId ?? null,
-          baseSha,
-          headSha,
-          changedFiles: changed_files ?? 0,
-          additions: additions ?? 0,
-          deletions: deletions ?? 0,
-        },
-      });
-    } catch (e) {
-      console.error("Summary enqueue failed", e);
-    }
+    await inngest.send({
+      name: "pr.summary.requested",
+      id: `summary-${repository.id}-${prNumber}`,
+      data: {
+        owner,
+        repo,
+        prNumber,
+        title: title ?? "",
+        description: description ?? "",
+        accountId: githubAccount.accountId,
+        installationId: installationId ?? null,
+        baseSha,
+        headSha,
+        changedFiles: changed_files ?? 0,
+        additions: additions ?? 0,
+        deletions: deletions ?? 0,
+      },
+    });
+
+    await inngest.send({
+      name: "pr.review.requested",
+      id: `review-${repository.id}-${prNumber}`,
+      data: {
+        owner,
+        repo,
+        prNumber,
+        userId: repository.ownerId,
+        runId: run.id,
+      },
+    });
 
     try {
-      await inngest.send({
-        name: "pr.review.requested",
-        id: `review-${repository.id}-${prNumber}`,
-        data: {
-          owner,
-          repo,
-          prNumber,
-          userId: repository.ownerId,
-          runId: run.id,
-        },
-      });
     } catch (e) {
       console.error("Review enqueue failed", e);
     }
