@@ -119,11 +119,6 @@ export async function reviewPullRequest(
       },
     });
 
-    try {
-    } catch (e) {
-      console.error("Review enqueue failed", e);
-    }
-
     return {
       sucess: true,
       message: "Review Queued",
