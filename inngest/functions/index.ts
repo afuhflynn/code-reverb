@@ -334,7 +334,6 @@ export const summarizePr = inngest.createFunction(
       changedFiles,
       additions,
       deletions,
-      installationId,
     } = event.data;
 
     // No summary for too many files changed
