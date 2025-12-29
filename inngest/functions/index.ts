@@ -334,6 +334,7 @@ export const summarizePr = inngest.createFunction(
       changedFiles,
       additions,
       deletions,
+      installationId,
     } = event.data;
 
     // No summary for too many files changed
@@ -399,7 +400,7 @@ Generate a technical summary based primarily on the code changes above.`;
     });
 
     await step.run("post-summary-comment", async () => {
-      await postSummaryAsUser(owner, repo, prNumber, summary);
+      await postSummaryAsUser(owner, repo, prNumber, summary, installationId);
     });
 
     return { success: true };

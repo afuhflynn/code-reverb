@@ -16,7 +16,7 @@ export function getOctokitForInstallation(installationId: number) {
     authStrategy: createAppAuth,
     auth: {
       appId: Number(process.env.GITHUB_APP_ID),
-      privateKey: process.env.GITHUB_PRIVATE_KEY,
+      privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
       installationId,
     },
   });

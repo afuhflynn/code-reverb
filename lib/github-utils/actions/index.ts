@@ -270,15 +270,15 @@ export async function postSummaryAsUser(
   owner: string,
   repo: string,
   prNumber: number,
-  summary: string
+  summary: string,
+  installationId: number
 ) {
-  const token = await getGithubToken();
-  const octokit = new Octokit({ auth: token });
+  const octokit = getOctokitForInstallation(installationId);
 
   await octokit.rest.issues.createComment({
     owner,
     repo,
     issue_number: prNumber,
-    body: summary,
+    body: `## Summary by CodeReverb\n\n${summary}\n\n---\n*Generated automatically by CodeReverb [Try out CodeReverb](https://codereverb.dev)*`,
   });
 }
