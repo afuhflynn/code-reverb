@@ -107,8 +107,11 @@ export async function reviewPullRequest(
       },
     });
 
+    console.log("installation", installation);
+
     await inngest.send({
       name: "pr.summary.requested",
+      id: `summary-${repository.id}-${prNumber}`,
       data: {
         owner,
         repo,
@@ -127,6 +130,7 @@ export async function reviewPullRequest(
 
     await inngest.send({
       name: "pr.review.requested",
+      id: `review-${repository.id}-${prNumber}`,
       data: {
         owner,
         repo,
