@@ -92,6 +92,7 @@ export async function reviewPullRequest(
 
     await inngest.send({
       name: "pr.review.requested",
+      id: `review-${repository.id}-${prNumber}`,
       data: {
         owner,
         repo,
@@ -176,6 +177,7 @@ export async function generatePullRequestSummary(
     const githubAccount = repository.owner.accounts[0];
     await inngest.send({
       name: "pr.summary.requested",
+      id: `review-${repository.id}-${prNumber}`,
       data: {
         owner,
         repo: repoName,
