@@ -136,6 +136,7 @@ export async function reviewPullRequest(
         repo,
         prNumber,
         userId: repository.ownerId,
+        installationId: installation?.installationId ?? null,
         runId: run.id,
       },
     });
