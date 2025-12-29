@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       const [owner, repoName] = repo?.split("/");
       // Trigger AI review when PR is opened or updated
       if (action === "opened" || action === "synchronized") {
-        await reviewPullRequest(
+        reviewPullRequest(
           owner,
           repoName,
           prNumber,
