@@ -75,8 +75,7 @@ export async function reviewPullRequest(
     });
 
     if (!defaultPersona) {
-      console.error("No persona found");
-      return { success: false };
+      throw new Error("No persona found");
     }
 
     // Create Run
