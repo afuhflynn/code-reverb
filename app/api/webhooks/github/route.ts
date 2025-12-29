@@ -116,7 +116,6 @@ export async function POST(request: NextRequest) {
           prNumber,
           pull_request?.title,
           pull_request?.body,
-          body?.account.id,
           body?.installation?.id,
           pull_request?.base?.sha,
           pull_request?.head?.sha,
