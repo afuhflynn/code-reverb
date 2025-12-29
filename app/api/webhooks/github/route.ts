@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  generatePullRequestSummary,
-  reviewPullRequest,
-} from "@/lib/ai/actions";
+import { reviewPullRequest } from "@/lib/ai/actions";
 import { inngest } from "@/lib/inngest";
 
 import { Webhooks } from "@octokit/webhooks";
@@ -110,12 +107,10 @@ export async function POST(request: NextRequest) {
       // Trigger AI review when PR is opened or updated
       if (action === "opened" || action === "synchronized") {
         try {
-          await generatePullRequestSummary(
+          await reviewPullRequest(
             owner,
             repoName,
             prNumber,
-            pull_request?.title,
-            pull_request?.body,
             body?.installation?.id,
             pull_request?.base?.sha,
             pull_request?.head?.sha,
@@ -123,16 +118,6 @@ export async function POST(request: NextRequest) {
             pull_request?.additions,
             pull_request?.deletions
           );
-          console.log(`Summary completed for: ${repo} #${prNumber}`);
-        } catch (error) {
-          console.error(
-            `Summarization failed for repo: ${repo} #${prNumber}: `,
-            error
-          );
-        }
-
-        try {
-          await reviewPullRequest(owner, repoName, prNumber);
           console.log(`Review completed for: ${repo} #${prNumber}`);
         } catch (error) {
           console.error(

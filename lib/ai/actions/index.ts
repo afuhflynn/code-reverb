@@ -7,7 +7,13 @@ import { prisma } from "@/lib/prisma";
 export async function reviewPullRequest(
   owner: string,
   repo: string,
-  prNumber: number
+  prNumber: number,
+  installationId: number,
+  baseSha: string,
+  headSha: string,
+  changedFiles: number,
+  additions: number,
+  deletions: number
 ) {
   try {
     const repository = await prisma.repo.findFirst({
@@ -91,6 +97,25 @@ export async function reviewPullRequest(
     });
 
     await inngest.send({
+      name: "pr.summary.requested",
+      id: `review-${repository.id}-${prNumber}`,
+      data: {
+        owner,
+        repo,
+        prNumber,
+        title: title ?? "",
+        description: description ?? "",
+        accountId: githubAccount.accountId,
+        installationId: installationId ?? null,
+        baseSha,
+        headSha,
+        changedFiles: changedFiles ?? 0,
+        additions: additions ?? 0,
+        deletions: deletions ?? 0,
+      },
+    });
+
+    await inngest.send({
       name: "pr.review.requested",
       id: `review-${repository.id}-${prNumber}`,
       data: {
@@ -134,71 +159,5 @@ export async function reviewPullRequest(
     } catch (dbError) {
       console.error("Failed to save error to database: ", dbError);
     }
-  }
-}
-
-export async function generatePullRequestSummary(
-  owner: string,
-  repoName: string,
-  prNumber: number,
-  title: string,
-  description: string,
-  installationId: number,
-  baseSha: string,
-  headSha: string,
-  changedFiles: number,
-  additions: number,
-  deletions: number
-) {
-  try {
-    const repository = await prisma.repo.findFirst({
-      where: {
-        name: repoName,
-        fullName: `${owner}/${repoName}`,
-      },
-      include: {
-        owner: {
-          include: {
-            accounts: {
-              where: {
-                providerId: "github",
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!repository)
-      throw new Error(
-        `Repository ${owner}/${repoName} not found in databse. Please reconnect the repository.`
-      );
-
-    const githubAccount = repository.owner.accounts[0];
-    await inngest.send({
-      name: "pr.summary.requested",
-      id: `review-${repository.id}-${prNumber}`,
-      data: {
-        owner,
-        repo: repoName,
-        prNumber,
-        title: title ?? "",
-        description: description ?? "",
-        accountId: githubAccount.accountId,
-        installationId: installationId ?? null,
-        baseSha,
-        headSha,
-        changedFiles: changedFiles ?? 0,
-        additions: additions ?? 0,
-        deletions: deletions ?? 0,
-      },
-    });
-
-    return {
-      sucess: true,
-      message: "PR Summary Queued",
-    };
-  } catch (error) {
-    console.error("Failed to post PR Summary ", error);
   }
 }
