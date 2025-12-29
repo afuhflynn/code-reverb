@@ -110,7 +110,6 @@ export async function POST(request: NextRequest) {
           owner,
           repoName,
           prNumber,
-          body?.installation?.id,
           pull_request?.base?.sha,
           pull_request?.head?.sha
         )
