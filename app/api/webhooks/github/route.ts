@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       if (action === "opened") {
         await generatePullRequestSummary(
           owner,
-          repo,
+          repoName,
           prNumber,
           pull_request?.title,
           pull_request?.body,
