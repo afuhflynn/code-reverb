@@ -107,41 +107,39 @@ export async function POST(request: NextRequest) {
       } = body;
 
       const [owner, repoName] = repo?.split("/");
-      // trigger pr summary immediately after
-      if (action === "opened") {
-        await generatePullRequestSummary(
-          owner,
-          repoName,
-          prNumber,
-          pull_request?.title,
-          pull_request?.body,
-          body?.installation?.id,
-          pull_request?.base?.sha,
-          pull_request?.head?.sha,
-          pull_request?.changed_files,
-          pull_request?.additions,
-          pull_request?.deletions
-        )
-          .then(() =>
-            console.log(`Summary completed for: ${repo} #${prNumber}`)
-          )
-          .catch((error) =>
-            console.error(
-              `Summarization failed for repo: ${repo} #${prNumber}: `,
-              error
-            )
-          );
-      }
       // Trigger AI review when PR is opened or updated
       if (action === "opened" || action === "synchronized") {
-        await reviewPullRequest(owner, repoName, prNumber)
-          .then(() => console.log(`Review completed for: ${repo} #${prNumber}`))
-          .catch((error) =>
-            console.error(
-              `Review failed for repo: ${repo} #${prNumber}: `,
-              error
-            )
+        try {
+          await generatePullRequestSummary(
+            owner,
+            repoName,
+            prNumber,
+            pull_request?.title,
+            pull_request?.body,
+            body?.installation?.id,
+            pull_request?.base?.sha,
+            pull_request?.head?.sha,
+            pull_request?.changed_files,
+            pull_request?.additions,
+            pull_request?.deletions
           );
+          console.log(`Summary completed for: ${repo} #${prNumber}`);
+        } catch (error) {
+          console.error(
+            `Summarization failed for repo: ${repo} #${prNumber}: `,
+            error
+          );
+        }
+
+        try {
+          await reviewPullRequest(owner, repoName, prNumber);
+          console.log(`Review completed for: ${repo} #${prNumber}`);
+        } catch (error) {
+          console.error(
+            `Review failed for repo: ${repo} #${prNumber}: `,
+            error
+          );
+        }
       }
     }
 
