@@ -75,8 +75,7 @@ export async function reviewPullRequest(
     });
 
     if (!defaultPersona) {
-      console.error("No persona found");
-      return { success: false };
+      throw new Error("No persona found");
     }
 
     // Create Run
@@ -107,17 +106,17 @@ export async function reviewPullRequest(
       },
     });
 
-    await inngest.send({
-      name: "pr.review.requested",
-      id: `review-${repository.id}-${prNumber}`,
-      data: {
-        owner,
-        repo,
-        prNumber,
-        userId: repository.ownerId,
-        runId: run.id,
-      },
-    });
+    // await inngest.send({
+    //   name: "pr.review.requested",
+    //   id: `review-${repository.id}-${prNumber}`,
+    //   data: {
+    //     owner,
+    //     repo,
+    //     prNumber,
+    //     userId: repository.ownerId,
+    //     runId: run.id,
+    //   },
+    // });
 
     return {
       sucess: true,
