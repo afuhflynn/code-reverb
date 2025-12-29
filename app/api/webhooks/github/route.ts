@@ -113,15 +113,12 @@ export async function POST(request: NextRequest) {
             prNumber,
             body?.installation?.id,
             pull_request?.base?.sha,
-            pull_request?.head?.sha,
-            pull_request?.changed_files,
-            pull_request?.additions,
-            pull_request?.deletions
+            pull_request?.head?.sha
           );
-          console.log(`Review completed for: ${repo} #${prNumber}`);
+          console.log(`Review queued for: ${repo} #${prNumber}`);
         } catch (error) {
           console.error(
-            `Review failed for repo: ${repo} #${prNumber}: `,
+            `Review queue failed for repo: ${repo} #${prNumber}: `,
             error
           );
         }

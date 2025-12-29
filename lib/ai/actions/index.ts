@@ -10,10 +10,7 @@ export async function reviewPullRequest(
   prNumber: number,
   installationId: number,
   baseSha: string,
-  headSha: string,
-  changedFiles: number,
-  additions: number,
-  deletions: number
+  headSha: string
 ) {
   try {
     const repository = await prisma.repo.findFirst({
@@ -46,12 +43,8 @@ export async function reviewPullRequest(
 
     const token = githubAccount.accessToken;
 
-    const { title, description, author } = await getPullRequestDiff(
-      token,
-      owner,
-      repo,
-      prNumber
-    );
+    const { title, description, changed_files, deletions, additions } =
+      await getPullRequestDiff(token, owner, repo, prNumber);
 
     // Find or create PullRequest
     let pullRequest = await (prisma as any).pullRequest.findUnique({
@@ -82,9 +75,8 @@ export async function reviewPullRequest(
     });
 
     if (!defaultPersona) {
-      throw new Error(
-        "No persona found for user. Please create a persona first."
-      );
+      console.error("No persona found");
+      return { success: false };
     }
 
     // Create Run
@@ -96,36 +88,44 @@ export async function reviewPullRequest(
       },
     });
 
-    await inngest.send({
-      name: "pr.summary.requested",
-      id: `review-${repository.id}-${prNumber}`,
-      data: {
-        owner,
-        repo,
-        prNumber,
-        title: title ?? "",
-        description: description ?? "",
-        accountId: githubAccount.accountId,
-        installationId: installationId ?? null,
-        baseSha,
-        headSha,
-        changedFiles: changedFiles ?? 0,
-        additions: additions ?? 0,
-        deletions: deletions ?? 0,
-      },
-    });
+    try {
+      await inngest.send({
+        name: "pr.summary.requested",
+        id: `summary-${repository.id}-${prNumber}`,
+        data: {
+          owner,
+          repo,
+          prNumber,
+          title: title ?? "",
+          description: description ?? "",
+          accountId: githubAccount.accountId,
+          installationId: installationId ?? null,
+          baseSha,
+          headSha,
+          changedFiles: changed_files ?? 0,
+          additions: additions ?? 0,
+          deletions: deletions ?? 0,
+        },
+      });
+    } catch (e) {
+      console.error("Summary enqueue failed", e);
+    }
 
-    await inngest.send({
-      name: "pr.review.requested",
-      id: `review-${repository.id}-${prNumber}`,
-      data: {
-        owner,
-        repo,
-        prNumber,
-        userId: repository.ownerId,
-        runId: run.id,
-      },
-    });
+    try {
+      await inngest.send({
+        name: "pr.review.requested",
+        id: `review-${repository.id}-${prNumber}`,
+        data: {
+          owner,
+          repo,
+          prNumber,
+          userId: repository.ownerId,
+          runId: run.id,
+        },
+      });
+    } catch (e) {
+      console.error("Review enqueue failed", e);
+    }
 
     return {
       sucess: true,
