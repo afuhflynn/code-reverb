@@ -106,22 +106,21 @@ export async function POST(request: NextRequest) {
       const [owner, repoName] = repo?.split("/");
       // Trigger AI review when PR is opened or updated
       if (action === "opened" || action === "synchronized") {
-        try {
-          await reviewPullRequest(
-            owner,
-            repoName,
-            prNumber,
-            body?.installation?.id,
-            pull_request?.base?.sha,
-            pull_request?.head?.sha
+        await reviewPullRequest(
+          owner,
+          repoName,
+          prNumber,
+          body?.installation?.id,
+          pull_request?.base?.sha,
+          pull_request?.head?.sha
+        )
+          .then(() => console.log(`Review queued for: ${repo} #${prNumber}`))
+          .catch((error) =>
+            console.error(
+              `Review queue failed for repo: ${repo} #${prNumber}: `,
+              error
+            )
           );
-          console.log(`Review queued for: ${repo} #${prNumber}`);
-        } catch (error) {
-          console.error(
-            `Review queue failed for repo: ${repo} #${prNumber}: `,
-            error
-          );
-        }
       }
     }
 
