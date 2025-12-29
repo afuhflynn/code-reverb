@@ -257,11 +257,28 @@ export async function postReviewComment(
   prNumber: number,
   review: string
 ) {
-  const octokit = await getOctokitForInstallation(installationId);
+  const octokit = getOctokitForInstallation(installationId);
   await octokit.rest.issues.createComment({
     owner,
     repo,
     issue_number: prNumber,
     body: `## Code review by CodeReverb\n\n${review}\n\n---\n*Powered by CodeReverb [Try out CodeReverb](https://codereverb.dev)*`,
+  });
+}
+
+export async function postSummaryAsUser(
+  owner: string,
+  repo: string,
+  prNumber: number,
+  summary: string
+) {
+  const token = await getGithubToken();
+  const octokit = new Octokit({ auth: token });
+
+  await octokit.rest.issues.createComment({
+    owner,
+    repo,
+    issue_number: prNumber,
+    body: summary,
   });
 }

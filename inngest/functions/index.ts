@@ -5,12 +5,11 @@ import { indexCodebase, retrieveContext } from "@/lib/ai/lib/rag";
 import {
   getPullRequestDiff,
   postReviewComment,
+  postSummaryAsUser,
 } from "@/lib/github-utils/actions";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { getOctokitForInstallation } from "@/config/octokit-instance";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 
 // Comment Posting Worker
 export const commentPost = inngest.createFunction(
@@ -49,7 +48,7 @@ export const commentPost = inngest.createFunction(
 
     // Post comments to GitHub
     await step.run("post-comments", async () => {
-      const octokit = await getOctokitForInstallation(installationId);
+      const octokit = getOctokitForInstallation(installationId);
 
       for (const comment of comments) {
         try {
@@ -401,13 +400,7 @@ Generate a technical summary based primarily on the code changes above.`;
     });
 
     await step.run("post-summary-comment", async () => {
-      await postReviewComment(
-        installationId, // or installation/user token, see your existing code
-        owner,
-        repo,
-        prNumber,
-        summary
-      );
+      await postSummaryAsUser(owner, repo, prNumber, summary);
     });
 
     return { success: true };
