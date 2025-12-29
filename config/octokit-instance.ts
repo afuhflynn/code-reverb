@@ -1,6 +1,5 @@
 import { createAppAuth } from "@octokit/auth-app";
 import { Octokit } from "octokit";
-
 /**
  * Creates an authenticated Octokit instance for a specific installation
  * @param installationId - GitHub App installation ID

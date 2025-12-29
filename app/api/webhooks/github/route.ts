@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
       const [owner, repoName] = repo?.split("/");
       // trigger pr summary immediately after
       if (action === "opened") {
+        console.log({ body });
         await generatePullRequestSummary(
           owner,
           repo,
