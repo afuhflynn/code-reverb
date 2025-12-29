@@ -1,8 +1,10 @@
 "use server";
 
+import { auth } from "@/lib/auth";
 import { getPullRequestDiff } from "@/lib/github-utils/actions";
 import { inngest } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
 
 export async function reviewPullRequest(
   owner: string,
@@ -142,7 +144,6 @@ export async function generatePullRequestSummary(
   prNumber: number,
   title: string,
   description: string,
-  accountId: number,
   installationId: number,
   baseSha: string,
   headSha: string,
@@ -151,6 +152,18 @@ export async function generatePullRequestSummary(
   deletions: number
 ) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() });
+
+    if (!session) throw new Error("Unauthorized");
+    const account = await prisma.account.findFirst({
+      where: {
+        userId: session.user.id,
+        providerId: "github",
+      },
+    });
+
+    if (!account?.accessToken) throw new Error("No GitHub access token found");
+
     await inngest.send({
       name: "pr.summary.requested",
       data: {
@@ -159,7 +172,7 @@ export async function generatePullRequestSummary(
         prNumber,
         title: title ?? "",
         description: description ?? "",
-        accountId,
+        accountId: account.accountId,
         installationId: installationId ?? null,
         baseSha,
         headSha,
