@@ -8,7 +8,6 @@ export async function reviewPullRequest(
   owner: string,
   repo: string,
   prNumber: number,
-  installationId: number,
   baseSha: string,
   headSha: string
 ) {
@@ -87,6 +86,27 @@ export async function reviewPullRequest(
       },
     });
 
+    const account = await prisma.account.findFirst({
+      where: {
+        accountId: String(githubAccount.accountId),
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!account) {
+      throw new Error("Invalid account");
+    }
+    const installation = await prisma.installation.findFirst({
+      where: {
+        userId: account.user.id,
+      },
+      select: {
+        installationId: true,
+      },
+    });
+
     await inngest.send({
       name: "pr.summary.requested",
       data: {
@@ -96,7 +116,7 @@ export async function reviewPullRequest(
         title: title ?? "",
         description: description ?? "",
         accountId: githubAccount.accountId,
-        installationId: installationId ?? null,
+        installationId: installation?.installationId ?? null,
         baseSha,
         headSha,
         changedFiles: changed_files ?? 0,
