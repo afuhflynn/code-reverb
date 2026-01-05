@@ -56,15 +56,14 @@ import {
   useDisable2FA,
   useRevokeSession,
   useRevokeAllSessions,
-  useSettingsBilling,
-  useUpdateSettingsBilling,
   useSettingsRepositories,
   useDisconnectRepository,
   useDisconnectAllRepositories,
 } from "@/hooks";
+import { useTheme } from "next-themes";
 
 interface SettingsContentProps {
-  activeSection: string;
+  activeSection: SettingsTab;
   hasChanges: boolean;
   setHasChanges: (hasChanges: boolean) => void;
 }
@@ -74,6 +73,7 @@ export function SettingsContent({
   hasChanges,
   setHasChanges,
 }: SettingsContentProps) {
+  const { setTheme } = useTheme();
   // Real data hooks
   const { data: profile, isLoading: profileLoading } = useSettingsProfile();
   const { data: notifications } = useSettingsNotifications();
@@ -93,8 +93,6 @@ export function SettingsContent({
   const disable2FA = useDisable2FA();
   const revokeSession = useRevokeSession();
   const revokeAllSessions = useRevokeAllSessions();
-  const { data: billing } = useSettingsBilling();
-  const updateBilling = useUpdateSettingsBilling();
   const disconnectRepository = useDisconnectRepository();
   const disconnectAllRepositories = useDisconnectAllRepositories();
 
@@ -257,7 +255,8 @@ export function SettingsContent({
         bio: profile.bio || "",
         location: profile.location || "",
         website: profile.website || "",
-        githubUrl: profile.githubUrl || "",
+        githubUrl:
+          profile?.githubUrl || `https://github.com/${profile.username}` || "",
         showEmail: profile.showEmail || false,
         showLocation: profile.showLocation !== false,
       });
@@ -324,7 +323,8 @@ export function SettingsContent({
         bio: profile.bio || "",
         location: profile.location || "",
         website: profile.website || "",
-        githubUrl: profile.githubUrl || "",
+        githubUrl:
+          profile?.githubUrl || `https://github.com/${profile.username}` || "",
         showEmail: profile.showEmail || false,
         showLocation: profile.showLocation !== false,
       });
@@ -358,6 +358,7 @@ export function SettingsContent({
   useEffect(() => {
     if (appearanceSettings) {
       setAppearanceData(appearanceSettings);
+      setTheme(appearanceSettings?.theme);
     }
   }, [appearanceSettings]);
 
@@ -386,7 +387,7 @@ export function SettingsContent({
           <CardHeader>
             <CardTitle>Profile Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 ">
             <div className="flex items-center gap-6">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={profile?.image} />
@@ -410,7 +411,7 @@ export function SettingsContent({
                     setProfileData({ ...profileData, name: e.target.value });
                     setHasChanges(true);
                   }}
-                  className="mt-1"
+                  className="mt-1 border-border!"
                 />
               </div>
               <div>
@@ -420,7 +421,7 @@ export function SettingsContent({
                   type="email"
                   value={profile?.email || ""}
                   disabled
-                  className="mt-1"
+                  className="mt-1 border-border!"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Email cannot be changed from profile settings
@@ -437,7 +438,7 @@ export function SettingsContent({
                   setProfileData({ ...profileData, bio: e.target.value });
                   setHasChanges(true);
                 }}
-                className="mt-1"
+                className="mt-1 border-border!"
                 rows={3}
               />
             </div>
@@ -455,7 +456,7 @@ export function SettingsContent({
                     });
                     setHasChanges(true);
                   }}
-                  className="mt-1"
+                  className="mt-1 border-border!"
                 />
               </div>
               <div>
@@ -467,7 +468,7 @@ export function SettingsContent({
                     setProfileData({ ...profileData, website: e.target.value });
                     setHasChanges(true);
                   }}
-                  className="mt-1"
+                  className="mt-1 border-border!"
                 />
               </div>
             </div>
@@ -481,7 +482,7 @@ export function SettingsContent({
                   setProfileData({ ...profileData, githubUrl: e.target.value });
                   setHasChanges(true);
                 }}
-                className="mt-1"
+                className="mt-1 border-border!"
               />
             </div>
           </CardContent>
@@ -759,13 +760,7 @@ export function SettingsContent({
                   <p className="font-medium">{session.device}</p>
                   <p className="text-sm text-muted-foreground">
                     {session.location} •{" "}
-                    {session.current
-                      ? "Active now"
-                      : `${Math.floor(
-                          (Date.now() -
-                            new Date(session.lastActive).getTime()) /
-                            (1000 * 60 * 60)
-                        )} hours ago`}
+                    {session.current ? "Active now" : session.lastActive}
                   </p>
                 </div>
                 {session.current ? (
@@ -810,7 +805,7 @@ export function SettingsContent({
           <CardTitle>Email Notifications</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-border">
             <div>
               <p className="font-medium">Review completed</p>
               <p className="text-sm text-muted-foreground">
@@ -831,7 +826,7 @@ export function SettingsContent({
               }}
             />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-border">
             <div>
               <p className="font-medium">Review failed</p>
               <p className="text-sm text-muted-foreground">
@@ -849,7 +844,7 @@ export function SettingsContent({
               }}
             />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-border">
             <div>
               <p className="font-medium">New repository added</p>
               <p className="text-sm text-muted-foreground">
@@ -867,7 +862,7 @@ export function SettingsContent({
               }}
             />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-border">
             <div>
               <p className="font-medium">Weekly summary</p>
               <p className="text-sm text-muted-foreground">
@@ -893,7 +888,7 @@ export function SettingsContent({
           <CardTitle>In-App Notifications</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-border!">
             <div>
               <p className="font-medium">AI insights available</p>
               <p className="text-sm text-muted-foreground">
@@ -911,7 +906,7 @@ export function SettingsContent({
               }}
             />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between border-border!">
             <div>
               <p className="font-medium">Team mentions</p>
               <p className="text-sm text-muted-foreground">
@@ -973,7 +968,7 @@ export function SettingsContent({
             <div>
               <Label htmlFor="ai-max-tokens">Max Tokens</Label>
               <Select
-                value={aiSettingsData.maxTokens.toString()}
+                value={aiSettingsData?.maxTokens?.toString()}
                 onValueChange={(value) => {
                   setAiSettingsData({
                     ...aiSettingsData,
@@ -1134,6 +1129,7 @@ export function SettingsContent({
               value={appearanceData.theme}
               onValueChange={(value) => {
                 setAppearanceData({ ...appearanceData, theme: value });
+                setTheme(value);
                 setHasChanges(true);
               }}
             >
@@ -1370,21 +1366,20 @@ export function SettingsContent({
                         <DialogHeader>
                           <DialogTitle>Disconnect repository?</DialogTitle>
                           <DialogDescription>
-                            This will disconnect <strong>{repo.fullName}</strong> from
-                            CodeReverb. New pull requests in this repository will no
-                            longer be automatically reviewed, and webhooks/indexing
+                            This will disconnect{" "}
+                            <strong>{repo.fullName}</strong> from CodeReverb.
+                            New pull requests in this repository will no longer
+                            be automatically reviewed, and webhooks/indexing
                             related to this repository may be disabled. Existing
-                            historical reviews will remain in analytics but will not
-                            be updated.
+                            historical reviews will remain in analytics but will
+                            not be updated.
                           </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
                           <Button variant="outline">Cancel</Button>
                           <Button
                             variant="destructive"
-                            onClick={() =>
-                              disconnectRepository.mutate(repo.id)
-                            }
+                            onClick={() => disconnectRepository.mutate(repo.id)}
                             disabled={disconnectRepository.isPending}
                           >
                             {disconnectRepository.isPending ? (
@@ -1400,8 +1395,8 @@ export function SettingsContent({
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No repositories are currently connected. Connect a repository from
-                the Repositories page.
+                No repositories are currently connected. Connect a repository
+                from the Repositories page.
               </p>
             )}
 
@@ -1423,10 +1418,10 @@ export function SettingsContent({
                   <DialogTitle>Disconnect all repositories?</DialogTitle>
                   <DialogDescription>
                     This will disconnect all repositories currently connected to
-                    CodeReverb for this account or organization. New pull requests
-                    will no longer be automatically reviewed until repositories are
-                    reconnected. Existing reviews and analytics will remain but will
-                    not be updated.
+                    CodeReverb for this account or organization. New pull
+                    requests will no longer be automatically reviewed until
+                    repositories are reconnected. Existing reviews and analytics
+                    will remain but will not be updated.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>

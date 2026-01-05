@@ -18,6 +18,9 @@ export const searchParamsSchema = {
   settings_tab: parseAsStringEnum([
     "profile",
     "notifications",
+    "account",
+    "secutiry",
+    "repositories",
     "ai",
     "privacy",
     "appearance",

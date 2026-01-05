@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { UAParser } from "ua-parser-js";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 // Helper function to parse user agent and get device info
 function parseUserAgent(userAgent: string) {
@@ -59,10 +61,15 @@ function getTimeAgo(date: Date) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await auth.api.getSession({ headers: await headers() });
 
-    // Get current session token from cookie
-    const currentToken = request.cookies.get("session")?.value;
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized", success: false },
+        { status: 401 }
+      );
+    }
+    const currentToken = session.session.token;
 
     // Fetch all sessions for the user
     const sessions = await prisma.session.findMany({
@@ -96,8 +103,15 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await requireAuth();
-    const currentToken = request.cookies.get("session")?.value;
+    const session = await auth.api.getSession({ headers: await headers() });
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized", success: false },
+        { status: 401 }
+      );
+    }
+    const currentToken = session.session.token;
 
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("sessionId");
