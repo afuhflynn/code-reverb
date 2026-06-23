@@ -27,3 +27,27 @@ interface ContributionData {
     };
   };
 }
+
+interface UserProfile {
+  name: string;
+  email: string;
+  bio: string;
+  location: string;
+  website: string;
+  githubUrl: string;
+  username: string;
+  showEmail: boolean;
+  showLocation: boolean;
+  image?: string;
+}
+
+type SettingsTab =
+  | "profile"
+  | "notifications"
+  | "account"
+  | "security"
+  | "ai"
+  | "privacy"
+  | "appearance"
+  | "organization"
+  | "repositories";

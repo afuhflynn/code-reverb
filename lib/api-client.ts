@@ -64,7 +64,7 @@ export const api = {
         apiRequest(`/users`, { method: "GET" }),
     },
     settings: {
-      getProfile: (): Promise<any> =>
+      getProfile: (): Promise<UserProfile | null> =>
         apiRequest("/settings/profile", { method: "GET" }),
       getNotifications: (): Promise<any> =>
         apiRequest("/settings/notifications", { method: "GET" }),

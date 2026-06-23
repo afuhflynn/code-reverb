@@ -24,8 +24,10 @@ export default function SettingsPage() {
           {/* Settings Navigation Sidebar */}
           <div className="lg:col-span-1">
             <SettingsSidebar
+              // @ts-ignore
               activeSection={params.settings_tab}
               setActiveSection={(v) =>
+                // @ts-ignore
                 setParams({ ...params, settings_tab: v })
               }
             />
@@ -34,6 +36,7 @@ export default function SettingsPage() {
           {/* Main Content Area */}
           <div className="lg:col-span-3">
             <SettingsContent
+              // @ts-ignore
               activeSection={params.settings_tab}
               hasChanges={hasChanges}
               setHasChanges={setHasChanges}

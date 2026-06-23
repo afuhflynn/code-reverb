@@ -15,6 +15,7 @@ import {
   Building,
   Search,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const settingsSections = [
   {
@@ -83,14 +84,6 @@ const settingsSections = [
   },
 ];
 
-type SettingsTab =
-  | "profile"
-  | "notifications"
-  | "ai"
-  | "privacy"
-  | "appearance"
-  | "organization"
-  | "repositories";
 interface SettingsSidebarProps {
   activeSection: SettingsTab;
   setActiveSection: (section: SettingsTab) => void;
@@ -148,7 +141,12 @@ export function SettingsSidebar({
               <Button
                 key={section.id}
                 variant={activeSection === section.id ? "secondary" : "ghost"}
-                className="w-full justify-start h-auto p-3"
+                className={cn(
+                  "w-full justify-start h-auto p-3",
+                  activeSection === section.id
+                    ? "text-accent-foreground! bg-accent!"
+                    : ""
+                )}
                 onClick={() => setActiveSection(section.id as SettingsTab)}
               >
                 <section.icon className="h-4 w-4 mr-3 shrink-0" />
@@ -175,7 +173,12 @@ export function SettingsSidebar({
               <Button
                 key={section.id}
                 variant={activeSection === section.id ? "secondary" : "ghost"}
-                className="w-full justify-start h-auto p-3"
+                className={cn(
+                  "w-full justify-start h-auto p-3",
+                  activeSection === section.id
+                    ? "text-accent-foreground! bg-accent!"
+                    : ""
+                )}
                 onClick={() => setActiveSection(section.id as SettingsTab)}
               >
                 <section.icon className="h-4 w-4 mr-3 shrink-0" />
@@ -202,7 +205,12 @@ export function SettingsSidebar({
               <Button
                 key={section.id}
                 variant={activeSection === section.id ? "secondary" : "ghost"}
-                className="w-full justify-start h-auto p-3"
+                className={cn(
+                  "w-full justify-start h-auto p-3",
+                  activeSection === section.id
+                    ? "text-accent-foreground! bg-accent!"
+                    : ""
+                )}
                 onClick={() => setActiveSection(section.id as SettingsTab)}
               >
                 <section.icon className="h-4 w-4 mr-3 shrink-0" />

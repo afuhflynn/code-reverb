@@ -19,6 +19,7 @@ export async function GET() {
         image: true,
         showEmail: true,
         showLocation: true,
+        username: true,
       },
     });
 
@@ -31,7 +32,7 @@ export async function GET() {
     console.error("Profile GET error:", error);
     return NextResponse.json(
       { error: "Failed to fetch profile" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -71,7 +72,7 @@ export async function PUT(request: NextRequest) {
     console.error("Profile PUT error:", error);
     return NextResponse.json(
       { error: "Failed to update profile" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
