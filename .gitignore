@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# Keep the example template tracked so contributors can discover required vars
+!.env.example
 
 # vercel
 .vercel
@@ -48,3 +50,4 @@ next-env.d.ts
 
 
 *.log
+.nvii/
